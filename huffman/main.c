@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
     fill_table(fp, t);
     
     // print out the table
-    print_table(t);
+    print_table_freq(t);
     fprintf(stdout, "\n");
 
 
@@ -39,6 +39,13 @@ int main(int argc, char *argv[]){
     post_order_traversal_test(tr);
     fprintf(stdout, "\n");
 
+    // now base on the tree, get the codeword and fill into freq_table
+    // freq table has "codeword" in each bucket
+
+    get_codeword(tr, t);
+    print_table_codeword(t);
+
+    fprintf(stdout, "\n");
 
 
 

@@ -11,6 +11,8 @@
 void destroy_tree_func(TreeNode*);
 // additional func for tree debug  
 void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof);
+// additonal func for get_codeword
+void get_codeword_func(TreeNode*, FreqTable*, Byte, int);
 
 
 // priority queue implementation
@@ -213,6 +215,32 @@ void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof){
             else{
                 fprintf(stdout, "(%c->%ld) ", trnode->b, trnode->freq);
             }
+        }
+    }
+    return;
+}
+
+
+void get_codeword(Tree* tr, FreqTable* t){
+    // after the finalize of the tree, get the codeword and store in the freqtable
+    get_codeword_func(tr->root, t, (Byte) 0, 0);
+    return;
+}
+
+
+void get_codeword_func(TreeNode* trnode, FreqTable* t, Byte codeword, int count){
+    if (trnode != NULL){
+        if (trnode->left == NULL && trnode->right == NULL){
+            // a leaf node
+            t->buckets[(int)trnode->b]->codeword = codeword;
+            t->buckets[(int) trnode->b]->cw_count = count;
+        }
+        else{
+            count++;
+            codeword = codeword << 1;  // shift 1 position, added position is 0
+            get_codeword_func(trnode->left, t, codeword, count);
+            codeword |= 1;  // added position change to 1
+            get_codeword_func(trnode->right, t, codeword, count);
         }
     }
     return;

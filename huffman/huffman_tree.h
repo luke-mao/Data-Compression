@@ -3,7 +3,6 @@
 
 #include "file.h"
 #include "freq_table.h"
-#include "main.h"
 
 // define a tree node
 typedef struct tree_node{
@@ -38,7 +37,7 @@ TreeNode* create_tree_node(Byte, long, TreeNode*, TreeNode*);
 void fill_tree(Tree*, NodePQ*);
 Tree* destroy_tree(Tree*);
 void post_order_traversal_test(const Tree*); // test to examine the tree in post-order-traversal
-
+void get_codeword(Tree*, FreqTable*);       // get the codeword
 
 // priority queue implementation
 NodePQ* create_pq(const FreqTable*);    // create and fill the pq

@@ -4,6 +4,7 @@
 
 #include "freq_table.h"
 #include "main.h"
+#include "byte.h"
 
 
 // create the freq table
@@ -75,6 +76,7 @@ void fill_table(FILE* fp, FreqTable* t){
 
             // adjust the number, start from 1
             t->buckets[(int)buffer]->freq = 1;
+            t->buckets[(int)buffer]->cw_count = 0;
 
             // update the counter
             t->counter++;
@@ -124,20 +126,44 @@ void fill_table(FILE* fp, FreqTable* t){
 
 
 // printout the frequency statistics
-void print_table(const FreqTable* t){
+void print_table_freq(const FreqTable* t){
     
     assert(t != NULL);
 
-    fprintf(stdout, "Freq table\n");
+    fprintf(stdout, "Freq table (freq)\n");
 
     for (int i = 0; i < ASCII_NUMBER; i++){
         if (t->buckets[i] != NULL){
             if ((Byte) i == t->p_eof){
-                fprintf(stdout, "p_eof: 1\n");
+                fprintf(stdout, "p_eof : 1\n");
             }
             else{
                 fprintf(stdout, "%c : %ld\n", i, t->buckets[i]->freq);
             }
+        }
+    }
+
+    return;
+}
+
+
+// print out the codeword
+void print_table_codeword(const FreqTable* t){
+    assert(t != NULL);
+
+    fprintf(stdout, "Freq table (codeword)\n");
+
+    for (int i = 0; i < ASCII_NUMBER; i++){
+        if (t->buckets[i] != NULL){
+            if ((Byte) i == t->p_eof){
+                fprintf(stdout, "p_eof : ");
+            }
+            else{
+                fprintf(stdout, "%c : ", i);
+            }
+
+            print_byte(t->buckets[i]->codeword, t->buckets[i]->cw_count);
+            fprintf(stdout, "\n");
         }
     }
 
