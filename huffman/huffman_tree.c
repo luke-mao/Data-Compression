@@ -189,31 +189,31 @@ void destroy_tree_func(TreeNode* trnode){
 void post_order_traversal_test(const Tree* tr){
     // test programme, use during debug to printout the post order travesal
     // caution about the pesudo eof byte
-    fprintf(stdout, "Tree print out\n");
+    fprintf(stdout, "Tree post order traversal\n");
     post_order_traversal_test_func(tr->root, tr->p_eof);
+    fprintf(stdout, "\n");
     return;
 }
 
 void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof){
-
-    if (trnode == NULL){
-        return;
-    }
-    else if (trnode->left == NULL && trnode->right == NULL){
-        // reach a leaf node, print out the byte and count
-        if (trnode->b == p_eof){
-            fprintf(stdout, "p_eof => %ld\n", trnode->freq);
-        }
-        else{
-            fprintf(stdout, "%c => %ld\n", trnode->b, trnode->freq);
-        }
-        return;
-    }
-    else{
-        // the node is a non-leaf node, traversal and print the freq
+    if (trnode != NULL){
         post_order_traversal_test_func(trnode->left, p_eof);
         post_order_traversal_test_func(trnode->right, p_eof);
-        fprintf(stdout, "%ld\n", trnode->freq);
-        return;
+
+        // now print trnode itself, consider two situations: non-leaf node and leaf node
+        if (trnode->left != NULL || trnode->right != NULL){
+            // non-leaf node
+            fprintf(stdout, "(%ld) ", trnode->freq);
+        }
+        else{
+            // leaf node
+            if (trnode->b == p_eof){
+                fprintf(stdout, "(p_eof->%ld) ", trnode->freq);
+            }
+            else{
+                fprintf(stdout, "(%c->%ld) ", trnode->b, trnode->freq);
+            }
+        }
     }
+    return;
 }

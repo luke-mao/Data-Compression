@@ -133,7 +133,7 @@ void print_table(const FreqTable* t){
     for (int i = 0; i < ASCII_NUMBER; i++){
         if (t->buckets[i] != NULL){
             if ((Byte) i == t->p_eof){
-                fprintf(stdout, "pseudo_eof: 1\n");
+                fprintf(stdout, "p_eof: 1\n");
             }
             else{
                 fprintf(stdout, "%c : %ld\n", i, t->buckets[i]->freq);
