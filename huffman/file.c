@@ -1,4 +1,8 @@
-# include "file.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#include "file.h"
 
 // open the file, exit if error during opening
 FILE* open_file(const char* file_name){

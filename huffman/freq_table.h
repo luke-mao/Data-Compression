@@ -1,7 +1,7 @@
 #ifndef FREQ_TABLE_H_
 #define FREQ_TABLE_H_
 
-#include "main.h"
+#include <stdio.h>
 
 typedef char Byte;
 

@@ -1,4 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
 #include "freq_table.h"
+#include "main.h"
 
 
 // create the freq table
@@ -122,6 +127,8 @@ void fill_table(FILE* fp, FreqTable* t){
 void print_table(const FreqTable* t){
     
     assert(t != NULL);
+
+    fprintf(stdout, "Freq table\n");
 
     for (int i = 0; i < ASCII_NUMBER; i++){
         if (t->buckets[i] != NULL){

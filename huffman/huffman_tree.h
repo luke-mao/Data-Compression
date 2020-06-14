@@ -1,28 +1,23 @@
 #ifndef HUFFMAN_TREE_H_
 #define HUFFMAN_TREE_H_
 
+#include "file.h"
+#include "freq_table.h"
 #include "main.h"
 
 // define a tree node
-typedef struct node{
+typedef struct tree_node{
     Byte b;         // this contain the byte
     long freq;      // this contain freq: set to 0 for non-leaf nodes
-    struct node* left;
-    struct node* right;
-} Node;
+    struct tree_node* left;
+    struct tree_node* right;
+} TreeNode;
 
 // define the tree
 typedef struct tree{
-    Node* root;         // the root node
+    TreeNode* root;         // the root node
     Byte p_eof;         // contain the eof value
 } Tree;
-
-// functions related to the tree
-Tree* create_tree(void);
-Node* create_tree_node(Byte, long freq);
-void add_to_left(Node* root, Node* left);
-void add_to_right(Node* root, Node* right);
-Tree* delete_tree(Tree*);
 
 
 // priority queue
@@ -31,18 +26,26 @@ Tree* delete_tree(Tree*);
 // arrange the nodes based on the freq
 // so index=0 => freq max, index=count-1 => freq min
 typedef struct node_priority_queue{
-    Node** nodes;           // number of nodes initially = count
+    TreeNode** nodes;           // number of nodes initially = count
     int total;              // total positions available
     int current;            // current number of positions filled
 } NodePQ;
 
-// some functions
+
+// tree implementation
+Tree* create_tree(const FreqTable*);    // create the empty tree and assign p_eof
+TreeNode* create_tree_node(Byte, long, TreeNode*, TreeNode*);
+void fill_tree(Tree*, NodePQ*);
+Tree* destroy_tree(Tree*);
+void post_order_traversal_test(const Tree*); // test to examine the tree in post-order-traversal
+
+
+// priority queue implementation
 NodePQ* create_pq(const FreqTable*);    // create and fill the pq
 NodePQ* destroy_pq(NodePQ*);
-void pq_insert(NodePQ*, Node*);
-Node* pq_pop(NodePQ*);
+void pq_insert(NodePQ*, TreeNode*);
+TreeNode* pq_pop(NodePQ*);
 int pq_item_count(const NodePQ*);
-
 
 
 #endif
