@@ -10,6 +10,7 @@
 #include "file.h"
 #include "freq_table.h"
 #include "huffman_tree.h"
+#include "compress.h"
 
 int main(int argc, char *argv[]){
 
@@ -36,17 +37,21 @@ int main(int argc, char *argv[]){
     fill_tree(tr, pq);
 
     // print out the tree
-    post_order_traversal_test(tr);
-    fprintf(stdout, "\n");
+    // post_order_traversal_test(tr);
+    // fprintf(stdout, "\n");
+    // post_order_traversal_test_no_recursion(tr);
+    // fprintf(stdout, "\n");
 
     // now base on the tree, get the codeword and fill into freq_table
     // freq table has "codeword" in each bucket
 
     get_codeword(tr, t);
-    print_table_codeword(t);
+    // print_table_codeword(t);
+    // fprintf(stdout, "\n");
 
-    fprintf(stdout, "\n");
-
+    // compress
+    char* out_file_name = compress(argv[1], t, tr);
+    compress_stats(argv[1], out_file_name);
 
 
     fp = close_file(fp);

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <assert.h>
 
 #include "huffman_tree.h"
@@ -118,6 +119,7 @@ Tree* create_tree(const FreqTable* t){
     }
 
     tr->p_eof = t->p_eof;
+    tr->leaf_count = t->counter;
     tr->root = NULL;
 
     return tr;
@@ -221,6 +223,64 @@ void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof){
 }
 
 
+void post_order_traversal_test_no_recursion(const Tree* tr){
+    // no recursion method to do the post order traversal
+    assert(tr != NULL);
+    NodeStack* s = create_stack(2 * tr->leaf_count);    // double the number in case core dump
+
+    fprintf(stdout, "Tree post order traversal (no recursion)\n");
+     
+    TreeNode* root = tr->root;
+    do {
+        // step 1: trace down to the null left root
+        while (root != NULL){
+            // push root right into the stack
+            if (root->right != NULL){
+                stack_push(s, root->right);
+            }
+            // push root into the stack
+            stack_push(s, root);
+            // go down to the root left
+            root = root->left;
+        }
+
+        // pop one item out and set it as root
+        root = stack_pop(s);
+        if (root->right != NULL && root->right == stack_top(s)){
+            // remove the top item
+            stack_pop(s);
+            // push the root back
+            stack_push(s, root);
+            // set root as root right node
+            root = root->right;
+        }
+        else{
+            // print the data, but consider leaf and non-leaf situations
+            if (root->left != NULL || root->right != NULL){
+                // non-leaf node
+                fprintf(stdout, "(%ld) ", root->freq);
+            }
+            else{
+                // leaf node
+                if (root->b == tr->p_eof){
+                    fprintf(stdout, "(p_eof->%ld) ", root->freq);
+                }
+                else{
+                    fprintf(stdout, "(%c->%ld) ", root->b, root->freq);
+                }
+            }
+
+            // after printing, set root as NULL
+            root = NULL;
+        }
+    } while (! stack_is_empty(s));
+
+    fprintf(stdout, "\n");
+    destroy_stack(s);
+    return;
+}
+
+
 void get_codeword(Tree* tr, FreqTable* t){
     // after the finalize of the tree, get the codeword and store in the freqtable
     get_codeword_func(tr->root, t, (Byte) 0, 0);
@@ -244,4 +304,94 @@ void get_codeword_func(TreeNode* trnode, FreqTable* t, Byte codeword, int count)
         }
     }
     return;
+}
+
+
+NodeStack* create_stack(int size){
+    // input the number to set the size of the stack
+    NodeStack* s = (NodeStack*) malloc (1*sizeof(NodeStack));
+    if (s == NULL){
+        fprintf(stderr, "memory error, create_stack stack\n");
+        exit(EXIT_FAILURE);
+    }
+
+    s->total_num = size;
+    s->current_num = 0;
+
+    s->nodes = (TreeNode**) malloc(size*sizeof(TreeNode*));
+    if (s->nodes == NULL){
+        fprintf(stderr, "memory error, create_stack, nodes\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for(int i = 0; i < size; i++){
+        s->nodes[i] = NULL;
+    }
+
+    return s;
+}
+
+
+NodeStack* destroy_stack(NodeStack* s){
+    // free everything
+    for(int i = 0; i < s->current_num; i++){
+        free(s->nodes[i]);
+        s->nodes[i] = NULL;
+    }
+
+    free(s->nodes);
+    s->nodes = NULL;
+
+    free(s);
+    s = NULL;
+
+    return s;
+}
+
+
+void stack_push(NodeStack* s, TreeNode* trnode){
+    assert(s != NULL && trnode != NULL);
+    assert(! stack_is_full(s));
+
+    s->nodes[s->current_num] = trnode;  // no need to malloc
+    s->current_num++;
+
+    return;
+}
+
+
+TreeNode* stack_pop(NodeStack* s){
+    assert(s != NULL);
+    assert(! stack_is_empty(s));
+
+    s->current_num--;
+    return s->nodes[s->current_num];
+}
+
+
+TreeNode* stack_top(const NodeStack* s){
+    assert(s != NULL);
+    if (stack_is_empty(s)){
+        return NULL;
+    }
+    else{
+        return s->nodes[s->current_num - 1];
+    }
+}
+
+
+int stack_current_size(const NodeStack* s){
+    assert(s != NULL);
+    return s->current_num;
+}
+
+bool stack_is_full(const NodeStack* s){
+    assert(s!=NULL);
+    return s->current_num == s->total_num;
+}
+
+
+bool stack_is_empty(const NodeStack* s){
+    assert(s!=NULL);
+    return s->current_num == 0;
 }
