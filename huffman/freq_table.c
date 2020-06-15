@@ -5,6 +5,7 @@
 #include "freq_table.h"
 #include "main.h"
 #include "byte.h"
+#include "file.h"
 
 
 // create the freq table
@@ -62,10 +63,13 @@ void fill_table(FILE* fp, FreqTable* t){
     assert(fp != NULL && t != NULL);
     
     // now read byte by byte, then record
-    Byte buffer = getc(fp);
-    while (buffer != EOF){
+    long n_bytes = file_size(fp);           // fp is rewind to the beginning
+    Byte buffer;
 
-        // if the corresponding char bucket is empty
+    for (long i = 0; i < n_bytes; i++){
+        // get the new byte
+        buffer = getc(fp);
+
         if (t->buckets[(int)buffer] == NULL){
             // assign the memory
             t->buckets[(int)buffer] = (Bucket*) malloc(sizeof(Bucket));
@@ -84,11 +88,10 @@ void fill_table(FILE* fp, FreqTable* t){
         else{
             t->buckets[(int)buffer]->freq += 1;
         }
-
-        // get the next byte
-        buffer = getc(fp);
     }
 
+    // here if getc one more time, then you will receive the EOF symbol
+    // so the following mannually add the EOF sign to the freq table
 
     // now determine the pesudo eof
     // use the first not occurred number as the pesudo eof
@@ -116,6 +119,7 @@ void fill_table(FILE* fp, FreqTable* t){
         }
     }
 
+    // usually the NULL can be used as the EOF
     if (! found){
         fprintf(stderr, "get_pesudo_eof: not found potential char\n");
         exit(EXIT_FAILURE);
@@ -135,10 +139,10 @@ void print_table_freq(const FreqTable* t){
     for (int i = 0; i < ASCII_NUMBER; i++){
         if (t->buckets[i] != NULL){
             if ((Byte) i == t->p_eof){
-                fprintf(stdout, "p_eof : 1\n");
+                fprintf(stdout, "p_eof (%d) : %ld\n", i, t->buckets[i]->freq);
             }
             else{
-                fprintf(stdout, "%c : %ld\n", i, t->buckets[i]->freq);
+                fprintf(stdout, "%c (%d) : %ld\n", i, i, t->buckets[i]->freq);
             }
         }
     }
@@ -156,10 +160,10 @@ void print_table_codeword(const FreqTable* t){
     for (int i = 0; i < ASCII_NUMBER; i++){
         if (t->buckets[i] != NULL){
             if ((Byte) i == t->p_eof){
-                fprintf(stdout, "p_eof : ");
+                fprintf(stdout, "p_eof (%d): ", i);
             }
             else{
-                fprintf(stdout, "%c : ", i);
+                fprintf(stdout, "%c (%d): ", i, i);
             }
 
             print_byte(t->buckets[i]->codeword, t->buckets[i]->cw_count);

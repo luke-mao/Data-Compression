@@ -8,12 +8,14 @@
 #include "main.h"
 
 
-// additional func for the tree deletion.
-void destroy_tree_func(TreeNode*);
-// additional func for tree debug  
+// func for the tree deletion.
+void destroy_tree_func(TreeNode*, Byte);
+// func for tree debug  
 void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof);
-// additonal func for get_codeword
+// func for get_codeword
 void get_codeword_func(TreeNode*, FreqTable*, Byte, int);
+// func for debug "p_eof node issue"
+void check_p_eof_exist(TreeNode* trnode, Byte p_eof);
 
 
 // priority queue implementation
@@ -72,6 +74,7 @@ void pq_insert(NodePQ* pq, TreeNode* n){
     // linear scan all existing freq
     int idx = 0;
     while (idx < pq->current){
+        // the freq in the pq decreases with increasing index
         if (pq->nodes[idx]->freq < n->freq){
             break;
         }
@@ -104,6 +107,25 @@ TreeNode* pq_pop(NodePQ* pq){
 int pq_item_count(const NodePQ* pq){
     return pq->current;
 }
+
+
+void pq_print(const NodePQ* pq){
+    // debug function, check the priority queue
+    assert(pq != NULL);
+
+    fprintf(stdout, "Priority Queue (debug)\n");
+    fprintf(stdout, "pq->current = %d\n", pq->current);
+    fprintf(stdout, "pq->total = %d\n", pq->total);
+
+    for(int i = 0; i < pq->current; i++){
+        assert(pq->nodes[i] != NULL);
+        fprintf(stdout, "%c (%d): %ld\n", i, i, pq->nodes[i]->freq);
+    }
+
+    fprintf(stdout, "\n");
+    return;
+}
+
 
 
 // tree implementation
@@ -140,6 +162,7 @@ TreeNode* create_tree_node(Byte b, long freq, TreeNode* left, TreeNode* right){
     // the char node should be the leaf node, so left = right = null
     trnode->left = left;
     trnode->right = right;
+
     return trnode;
 }
 
@@ -147,7 +170,6 @@ TreeNode* create_tree_node(Byte b, long freq, TreeNode* left, TreeNode* right){
 void fill_tree(Tree* tr, NodePQ* pq){
     // given the tree and the node priority queue, fill the tree
     // the priority queue is filled with all nodes 
-
     // when the loop ends, there should be only 1 thing, which is the root node
     while (pq_item_count(pq) != 1){
         // follow the huffman tree construction
@@ -157,8 +179,7 @@ void fill_tree(Tree* tr, NodePQ* pq){
 
         // create the Treenode, with 1 as left and 2 as right
         // the byte just input 1, since it is not relevant
-        TreeNode* trnode = create_tree_node(1, (trn1->freq)+(trn2->freq), trn1, trn2
-        );
+        TreeNode* trnode = create_tree_node(1, (trn1->freq)+(trn2->freq), trn1, trn2);
 
         // insert back to the priority queue
         pq_insert(pq, trnode);
@@ -168,24 +189,46 @@ void fill_tree(Tree* tr, NodePQ* pq){
     return;
 }
 
-
+/* 
+    The destroy function returns free():invalid pointer error
+    when it tries to free the node with p_eof.
+    But i could not figure out why??
+    for small files it looks fine, but large size original file, then either
+    segmentation fault or invalid pointer error. 
+*/
 Tree* destroy_tree(Tree* tr){
     // free the memory
     // recursion method
-    destroy_tree_func(tr->root);
+    assert(tr != NULL);
+
+    // have to modify the function to avoid the bug
+    // only one node is not free-ed, should be fine
+    destroy_tree_func(tr->root, tr->p_eof);
+
     free(tr);
     tr = NULL;
     return tr;
 }
 
-void destroy_tree_func(TreeNode* trnode){
-    if (trnode == NULL)   return;
-    if (trnode->left != NULL)   destroy_tree_func(trnode->left);
-    if (trnode->right != NULL)  destroy_tree_func(trnode->right);
-    
-    free(trnode);
-    trnode = NULL;
+/*
+    Consider the error mentioned above,
+    modify the following function, when meet the p_eof node, omit it, do not free it,
+    and free the other nodes. 
+*/
+void destroy_tree_func(TreeNode* trnode, Byte p_eof){
+    if (trnode != NULL){
+        destroy_tree_func(trnode->left, p_eof);
+        destroy_tree_func(trnode->right, p_eof);
+        
+        // one node is very strange , no b , and freq = 1
+        // however the freq won't be 1, very strange
+        //printf("%c | %ld\n", trnode->b, trnode->freq);
 
+        if (! (trnode->b == p_eof && trnode->freq == 1)){
+            free(trnode);
+        }
+        trnode = NULL;
+    }
     return;
 }
 
@@ -198,6 +241,7 @@ void post_order_traversal_test(const Tree* tr){
     fprintf(stdout, "\n");
     return;
 }
+
 
 void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof){
     if (trnode != NULL){
@@ -292,12 +336,12 @@ void get_codeword_func(TreeNode* trnode, FreqTable* t, Byte codeword, int count)
     if (trnode != NULL){
         if (trnode->left == NULL && trnode->right == NULL){
             // a leaf node
-            t->buckets[(int)trnode->b]->codeword = codeword;
-            t->buckets[(int) trnode->b]->cw_count = count;
+            t->buckets[(int) (trnode->b)]->codeword = codeword;
+            t->buckets[(int) (trnode->b)]->cw_count = count;
         }
         else{
             count++;
-            codeword = codeword << 1;  // shift 1 position, added position is 0
+            codeword <<= 1;  // shift 1 position, added position is 0
             get_codeword_func(trnode->left, t, codeword, count);
             codeword |= 1;  // added position change to 1
             get_codeword_func(trnode->right, t, codeword, count);
@@ -394,4 +438,26 @@ bool stack_is_full(const NodeStack* s){
 bool stack_is_empty(const NodeStack* s){
     assert(s!=NULL);
     return s->current_num == 0;
+}
+
+
+// additional function, used during debug of the "p_eof node issue"
+void check_p_eof_exist(TreeNode* trnode, Byte p_eof){
+
+    if (trnode == NULL){
+        return;
+    }
+    else if (trnode->left == NULL && trnode->right == NULL){
+        if (trnode->b == p_eof){
+            printf("find p_eof, (%c)(%ld)\n", trnode->b, trnode->freq);
+            free(trnode);
+            printf("Successfully free the p_eof\n");
+        }
+    }
+    else{
+        check_p_eof_exist(trnode->right, p_eof);
+        check_p_eof_exist(trnode->left, p_eof);
+    }
+
+    return;
 }

@@ -3,7 +3,13 @@
 
 #include <stdio.h>
 
-typedef char Byte;
+/*
+    Byte = unsigned char, 
+    so that i can cover the whole ANSCII table.
+    EOF is not used, rather than i count how many bytes
+    using fseek and ftell with a for loop. 
+*/
+typedef unsigned char Byte;
 
 typedef struct char_bucket{
     long freq;

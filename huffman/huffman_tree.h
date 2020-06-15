@@ -58,6 +58,7 @@ NodePQ* destroy_pq(NodePQ*);
 void pq_insert(NodePQ*, TreeNode*);
 TreeNode* pq_pop(NodePQ*);
 int pq_item_count(const NodePQ*);
+void pq_print(const NodePQ*);
 
 
 // stack implementation 

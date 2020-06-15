@@ -6,13 +6,10 @@
 #include <stdbool.h>
 
 
-// open the file, exit if error during opening
-FILE* open_file(const char* file_name);
-FILE* open_file_write(const char* file_name);
-
-
-// close the file
-FILE* close_file(FILE* ffp);
+FILE* open_file(const char* file_name);         // "rb"
+FILE* open_file_write(const char* file_name);   // "wb"
+FILE* close_file(FILE* fp);
+long file_size(FILE* fp);
 
 
 #endif
