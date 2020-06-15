@@ -1,16 +1,15 @@
-// this is still the draft
-// later on i will separate the compress and decompress
+/*
+    Main function for compression.
+    Input the file name as ./compress <file name>
+*/
+
 
 #include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <assert.h>
-
-#include "main.h"
 #include "file.h"
 #include "freq_table.h"
-#include "huffman_tree.h"
-#include "compress.h"
+#include "data_structure.h"
+#include "compress_func.h"
+
 
 int main(int argc, char *argv[]){
 
@@ -56,9 +55,6 @@ int main(int argc, char *argv[]){
     destroy_table(t);
     destroy_pq(pq);
     destroy_tree(tr);
-
-    //post_order_traversal_test(tr);
-
     return 0;
 }
 

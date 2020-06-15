@@ -2,20 +2,17 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
-
-#include "huffman_tree.h"
+#include "data_structure.h"
 #include "freq_table.h"
-#include "main.h"
+#include "byte.h"
 
 
 // func for the tree deletion.
-void destroy_tree_func(TreeNode*, Byte);
+void destroy_tree_func(TreeNode*);
 // func for tree debug  
-void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof);
+void post_order_traversal_test_func(TreeNode* trnode);
 // func for get_codeword
 void get_codeword_func(TreeNode*, FreqTable*, Byte, int);
-// func for debug "p_eof node issue"
-void check_p_eof_exist(TreeNode* trnode, Byte p_eof);
 
 
 // priority queue implementation
@@ -92,6 +89,7 @@ void pq_insert(NodePQ* pq, TreeNode* n){
     return;
 }
 
+
 TreeNode* pq_pop(NodePQ* pq){
     // there must be some nodes available, check "current" > 0
     assert (pq->current > 0);
@@ -127,9 +125,6 @@ void pq_print(const NodePQ* pq){
 }
 
 
-
-// tree implementation
-
 Tree* create_tree(const FreqTable* t){
     // this function creates the empty tree
     // and malloc the root, and assign p_eof
@@ -139,13 +134,12 @@ Tree* create_tree(const FreqTable* t){
         fprintf(stderr, "memory error create_tree\n");
         exit(EXIT_FAILURE);
     }
-
-    tr->p_eof = t->p_eof;
+    
     tr->leaf_count = t->counter;
     tr->root = NULL;
-
     return tr;
 }
+
 
 TreeNode* create_tree_node(Byte b, long freq, TreeNode* left, TreeNode* right){
     // create the tree node
@@ -189,44 +183,23 @@ void fill_tree(Tree* tr, NodePQ* pq){
     return;
 }
 
-/* 
-    The destroy function returns free():invalid pointer error
-    when it tries to free the node with p_eof.
-    But i could not figure out why??
-    for small files it looks fine, but large size original file, then either
-    segmentation fault or invalid pointer error. 
-*/
+
 Tree* destroy_tree(Tree* tr){
-    // free the memory
-    // recursion method
+    // free the memory, recursion method
     assert(tr != NULL);
 
-    // have to modify the function to avoid the bug
-    // only one node is not free-ed, should be fine
-    destroy_tree_func(tr->root, tr->p_eof);
-
+    destroy_tree_func(tr->root);
     free(tr);
     tr = NULL;
     return tr;
 }
 
-/*
-    Consider the error mentioned above,
-    modify the following function, when meet the p_eof node, omit it, do not free it,
-    and free the other nodes. 
-*/
-void destroy_tree_func(TreeNode* trnode, Byte p_eof){
-    if (trnode != NULL){
-        destroy_tree_func(trnode->left, p_eof);
-        destroy_tree_func(trnode->right, p_eof);
-        
-        // one node is very strange , no b , and freq = 1
-        // however the freq won't be 1, very strange
-        //printf("%c | %ld\n", trnode->b, trnode->freq);
 
-        if (! (trnode->b == p_eof && trnode->freq == 1)){
-            free(trnode);
-        }
+void destroy_tree_func(TreeNode* trnode){
+    if (trnode != NULL){
+        destroy_tree_func(trnode->left);
+        destroy_tree_func(trnode->right);
+        free(trnode);
         trnode = NULL;
     }
     return;
@@ -237,16 +210,16 @@ void post_order_traversal_test(const Tree* tr){
     // test programme, use during debug to printout the post order travesal
     // caution about the pesudo eof byte
     fprintf(stdout, "Tree post order traversal\n");
-    post_order_traversal_test_func(tr->root, tr->p_eof);
+    post_order_traversal_test_func(tr->root);
     fprintf(stdout, "\n");
     return;
 }
 
 
-void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof){
+void post_order_traversal_test_func(TreeNode* trnode){
     if (trnode != NULL){
-        post_order_traversal_test_func(trnode->left, p_eof);
-        post_order_traversal_test_func(trnode->right, p_eof);
+        post_order_traversal_test_func(trnode->left);
+        post_order_traversal_test_func(trnode->right);
 
         // now print trnode itself, consider two situations: non-leaf node and leaf node
         if (trnode->left != NULL || trnode->right != NULL){
@@ -255,12 +228,7 @@ void post_order_traversal_test_func(TreeNode* trnode, Byte p_eof){
         }
         else{
             // leaf node
-            if (trnode->b == p_eof){
-                fprintf(stdout, "(p_eof->%ld) ", trnode->freq);
-            }
-            else{
-                fprintf(stdout, "(%c->%ld) ", trnode->b, trnode->freq);
-            }
+            fprintf(stdout, "(%c->%ld) ", trnode->b, trnode->freq);
         }
     }
     return;
@@ -306,12 +274,7 @@ void post_order_traversal_test_no_recursion(const Tree* tr){
             }
             else{
                 // leaf node
-                if (root->b == tr->p_eof){
-                    fprintf(stdout, "(p_eof->%ld) ", root->freq);
-                }
-                else{
-                    fprintf(stdout, "(%c->%ld) ", root->b, root->freq);
-                }
+                fprintf(stdout, "(%c->%ld) ", root->b, root->freq);
             }
 
             // after printing, set root as NULL
@@ -438,26 +401,4 @@ bool stack_is_full(const NodeStack* s){
 bool stack_is_empty(const NodeStack* s){
     assert(s!=NULL);
     return s->current_num == 0;
-}
-
-
-// additional function, used during debug of the "p_eof node issue"
-void check_p_eof_exist(TreeNode* trnode, Byte p_eof){
-
-    if (trnode == NULL){
-        return;
-    }
-    else if (trnode->left == NULL && trnode->right == NULL){
-        if (trnode->b == p_eof){
-            printf("find p_eof, (%c)(%ld)\n", trnode->b, trnode->freq);
-            free(trnode);
-            printf("Successfully free the p_eof\n");
-        }
-    }
-    else{
-        check_p_eof_exist(trnode->right, p_eof);
-        check_p_eof_exist(trnode->left, p_eof);
-    }
-
-    return;
 }

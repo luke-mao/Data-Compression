@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <assert.h>
 #include "freq_table.h"
-#include "main.h"
 #include "byte.h"
 #include "file.h"
 
@@ -90,40 +89,9 @@ void fill_table(FILE* fp, FreqTable* t){
         }
     }
 
-    // here if getc one more time, then you will receive the EOF symbol
-    // so the following mannually add the EOF sign to the freq table
-
-    // now determine the pesudo eof
-    // use the first not occurred number as the pesudo eof
-    // return error if no such number is found
-    // but typically not possible
-
-    bool found = false;
-
-    for (int i = 0; i < ASCII_NUMBER; i++){
-        if (t->buckets[i] == NULL){
-            // found
-            found = true;
-
-            // assign the memory
-            t->buckets[i] = (Bucket*) malloc(sizeof(Bucket));
-            if (t->buckets[i] == NULL){
-                fprintf(stderr, "memory error: t->buckets[buffer]\n");
-                exit(EXIT_FAILURE);
-            }
-
-            // freq = 1
-            t->buckets[i]->freq = 1;    
-            t->p_eof = (Byte) i;    
-            break;   
-        }
-    }
-
-    // usually the NULL can be used as the EOF
-    if (! found){
-        fprintf(stderr, "get_pesudo_eof: not found potential char\n");
-        exit(EXIT_FAILURE);
-    }
+    /*  no need to find the pesudo_eof
+        in the header, include how many bits for pad at the end of file
+        so during reading, omit the last few bits is enough.*/
 
     return;    
 }
@@ -131,19 +99,13 @@ void fill_table(FILE* fp, FreqTable* t){
 
 // printout the frequency statistics
 void print_table_freq(const FreqTable* t){
-    
     assert(t != NULL);
 
     fprintf(stdout, "Freq table (freq)\n");
 
     for (int i = 0; i < ASCII_NUMBER; i++){
         if (t->buckets[i] != NULL){
-            if ((Byte) i == t->p_eof){
-                fprintf(stdout, "p_eof (%d) : %ld\n", i, t->buckets[i]->freq);
-            }
-            else{
-                fprintf(stdout, "%c (%d) : %ld\n", i, i, t->buckets[i]->freq);
-            }
+            fprintf(stdout, "%c (%d) : %ld\n", i, i, t->buckets[i]->freq);
         }
     }
 
@@ -159,17 +121,12 @@ void print_table_codeword(const FreqTable* t){
 
     for (int i = 0; i < ASCII_NUMBER; i++){
         if (t->buckets[i] != NULL){
-            if ((Byte) i == t->p_eof){
-                fprintf(stdout, "p_eof (%d): ", i);
-            }
-            else{
-                fprintf(stdout, "%c (%d): ", i, i);
-            }
-
+            // print, separate into two parts
+            fprintf(stdout, "%c (%d): ", i, i);
             print_byte(t->buckets[i]->codeword, t->buckets[i]->cw_count);
             fprintf(stdout, "\n");
         }
     }
-
+    
     return;
 }
