@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
     NodePQ* pq = create_pq(t);
     // pq_print(pq);
 
-    Tree* tr = create_tree(t);
+    Tree* tr = create_tree(t->counter);
     fill_tree(tr, pq);
 
     // print out the tree

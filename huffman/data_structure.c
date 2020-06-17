@@ -125,7 +125,7 @@ void pq_print(const NodePQ* pq){
 }
 
 
-Tree* create_tree(const FreqTable* t){
+Tree* create_tree(const int leaf_counter){
     // this function creates the empty tree
     // and malloc the root, and assign p_eof
     Tree* tr;
@@ -135,7 +135,7 @@ Tree* create_tree(const FreqTable* t){
         exit(EXIT_FAILURE);
     }
     
-    tr->leaf_count = t->counter;
+    tr->leaf_count = leaf_counter;
     tr->root = NULL;
     return tr;
 }

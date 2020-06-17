@@ -56,7 +56,7 @@ typedef struct node_stack{
 
 
 // tree
-Tree* create_tree(const FreqTable*);    // create the empty tree and assign p_eof
+Tree* create_tree(const int);    // create the empty tree, assign the leaf counter
 TreeNode* create_tree_node(Byte, long, TreeNode*, TreeNode*);
 void fill_tree(Tree*, NodePQ*);
 Tree* destroy_tree(Tree*);
