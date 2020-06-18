@@ -207,22 +207,22 @@ void write_body(FILE* new, FILE* old, const FreqTable* t){
     Byte old_byte;      // as a buffer, read the old file
     // the following two is the actual output, shorter code
     Byte b = 0;
-    int b_count = 0;
-    Byte cw = 0;        // codeword
-    int cw_count = 0;
+    int b_count = 0;    // count number of bits used already (should count from left end)
+    Byte cw = 0;        // codeword for each byte
+    int cw_count = 0;   // count number of bits needed (count from right end)
 
     // does not need to rewind, fp is already at the beginning
     // byte is unsigned char
     // get the file size and then use the for loop
     long size = file_size(old);
     for (long i = 0; i < size; i++){
-        old_byte = getc(old);           // get the old byte
+        old_byte = getc(old);           // get the original byte
 
         // get the cw and cw_count
         cw = t->buckets[(int) old_byte]->codeword;
         cw_count = t->buckets[(int) old_byte]->cw_count;
 
-        if (b_count + cw_count <= 8){
+        if (b_count + cw_count <= 8){   
             b <<= cw_count;
             b |= cw;
             b_count += cw_count;
@@ -235,7 +235,7 @@ void write_body(FILE* new, FILE* old, const FreqTable* t){
         }
         else{ // b_count + cw_count > 8
             b <<= (8 - b_count);
-            Byte add_to_b = cw >> b_count;
+            Byte add_to_b = cw >> (b_count + cw_count - 8); // !!!!!!!!
             b |= add_to_b;
             putc(b, new);
             b = 0;

@@ -45,8 +45,8 @@ int main(int argc, char *argv[]){
     // freq table has "codeword" in each bucket
 
     get_codeword(tr, t);
-    // print_table_codeword(t);
-    // fprintf(stdout, "\n");
+    print_table_codeword(t);
+    fprintf(stdout, "\n");
 
     // compress
     char* out_file_name = compress(argv[1], t, tr);

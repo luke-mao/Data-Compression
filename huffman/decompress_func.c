@@ -43,7 +43,7 @@ Tree* read_header(FILE* fp){
     buffer = getc(fp);
 
     // prepare the stack, enlarge the size in case core dump
-    NodeStack* s = create_stack(3 * leaf_num);
+    NodeStack* s = create_stack(5 * leaf_num);
 
     // while we have not found all the leaf nodes
     bool tree_finish = false;
@@ -188,36 +188,27 @@ void decompress_body(FILE* fp_in, FILE* fp_out, const Tree* tr){
     buffer2 = getc(fp_in);      // use buffer2 to extract the padding symbol
     // 00000111 means the last three are padded
 
-    int bit_pos_start;
-
+    // the last byte, we still read from bit_pos = 7, but the ending is different
+    int bit_pos_end = 0;
 
     // calculate how many bits are padded
-    if ((int) buffer2 == 0){
-        // no padding, then simply follow everything above again
-        bit_pos_start = 7; 
-    }
-    else{
+    if ((int) buffer2 != 0){
         // padded zero at the end of last byte
         // count how many bits are padded
-        int bit_pos = 0;
-        while (bit_pos <= 7){
-            if ( ((1<<bit_pos) & buffer2) == 1 ){
-                bit_pos++;
+        while (bit_pos_end <= 7){
+            // get the bit, remember to shift to rightmost position
+            Byte test = (((1 << bit_pos_end) & buffer2) >> bit_pos_end);
+            if ( (int) test == 1 ){
+                bit_pos_end++;
             }
             else{
                 break;
             }
-            
-            bit_pos++;
         }
-
-        buffer1 >>= bit_pos;
-        bit_pos_start = 7 - bit_pos;
-
     }
 
     // do bit operation on buffer1 for the last few iterations
-    for (int bit_pos = bit_pos_start; bit_pos >= 0; bit_pos--){
+    for (int bit_pos = 7; bit_pos >= bit_pos_end; bit_pos--){
         // extract the bit
         mask = 1 << bit_pos;
         bit = (buffer1 & mask) >> bit_pos;
@@ -241,7 +232,15 @@ void decompress_body(FILE* fp_in, FILE* fp_out, const Tree* tr){
 }
 
 
+void decompress_stats(char* file_in, char* file_out){
+    fprintf(stdout, "Decompression statistics:\n");
+    fprintf(
+        stdout, 
+        "Input filename=\"%s\". Output filename=\"%s\"\n", file_in, file_out
+    );
 
+    return;
+}
 
 
 

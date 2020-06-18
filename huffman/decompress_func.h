@@ -40,3 +40,9 @@ Tree* read_header(FILE*);
     and discard the padding 0.
 */
 void decompress_body(FILE* fp_in, FILE* fp_out, const Tree* tr);
+
+
+/*
+    Print some statistics
+*/
+void decompress_stats(char* file_in, char* file_out);

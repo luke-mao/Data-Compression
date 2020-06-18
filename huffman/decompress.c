@@ -35,8 +35,7 @@ int main(int argc, char* argv[]){
 
     // use the tree, to decompress the file
     decompress_body(fp_in, fp_out, tr);
-    fprintf(stdout, "Finish decompression, output file \"%s\"\n", file_out);
-
+    decompress_stats(file_in, file_out);
 
     close_file(fp_in);
     close_file(fp_out);
