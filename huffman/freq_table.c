@@ -79,7 +79,6 @@ void fill_table(FILE* fp, FreqTable* t){
 
             // adjust the number, start from 1
             t->buckets[(int)buffer]->freq = 1;
-            t->buckets[(int)buffer]->cw_count = 0;
 
             // update the counter
             t->counter++;
@@ -109,24 +108,5 @@ void print_table_freq(const FreqTable* t){
         }
     }
 
-    return;
-}
-
-
-// print out the codeword
-void print_table_codeword(const FreqTable* t){
-    assert(t != NULL);
-
-    fprintf(stdout, "Freq table (codeword)\n");
-
-    for (int i = 0; i < ASCII_NUMBER; i++){
-        if (t->buckets[i] != NULL){
-            // print, separate into two parts
-            fprintf(stdout, "%c (%d): ", i, i);
-            print_byte(t->buckets[i]->codeword, t->buckets[i]->cw_count);
-            fprintf(stdout, "\n");
-        }
-    }
-    
     return;
 }

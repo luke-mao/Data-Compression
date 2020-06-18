@@ -23,7 +23,7 @@
     Remaining bytes: post order traversal of the tree
 */
 
-char* compress(char* file_name, const FreqTable* t, const Tree* tr);
+char* compress(char* file_name, const FreqTable* t, const Tree* tr, CodeWord**);
 void compress_stats(const char* original, const char* compress);
 
 #endif

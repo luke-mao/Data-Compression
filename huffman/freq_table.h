@@ -7,7 +7,6 @@
 // Bucket, for the frequent table
 typedef struct char_bucket{
     long freq;
-    Byte codeword;
     int cw_count;
 } Bucket;
 
@@ -30,6 +29,5 @@ void fill_table(FILE*, FreqTable*);
 
 // printout the frequency statistics
 void print_table_freq(const FreqTable*);
-void print_table_codeword(const FreqTable*);
 
 #endif

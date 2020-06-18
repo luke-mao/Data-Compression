@@ -62,7 +62,8 @@ void fill_tree(Tree*, NodePQ*);
 Tree* destroy_tree(Tree*);
 void post_order_traversal_test(const Tree*); // test to examine the tree in post-order-traversal
 void post_order_traversal_test_no_recursion(const Tree*);   // no recursion method, use stack
-void get_codeword(Tree*, FreqTable*);       // get the codeword
+void get_codeword(Tree*, CodeWord**);       // get the codeword
+int get_tree_height(const TreeNode*);             // get the tree height
 
 
 // priority queue
@@ -72,6 +73,7 @@ void pq_insert(NodePQ*, TreeNode*);
 TreeNode* pq_pop(NodePQ*);
 int pq_item_count(const NodePQ*);
 void pq_print(const NodePQ*);
+void pq_scan(const NodePQ*);
 
 
 // stack 

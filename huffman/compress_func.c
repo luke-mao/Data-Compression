@@ -13,10 +13,10 @@
 char* get_compressed_file_name(char*);
 void write_header(FILE*, const Tree*);
 void write_header_tree(FILE*, const Tree*);
-void write_body(FILE*, FILE*, const FreqTable*);
+void write_body(FILE*, FILE*, const FreqTable*, CodeWord**);
 
 
-char* compress(char* file_name, const FreqTable* t, const Tree* tr){
+char* compress(char* file_name, const FreqTable* t, const Tree* tr, CodeWord** cw){
     // first get the output file name
     char* out_file_name = get_compressed_file_name(file_name);
 
@@ -26,7 +26,7 @@ char* compress(char* file_name, const FreqTable* t, const Tree* tr){
 
     // first output the header to the FILE* new
     write_header(new, tr);
-    write_body(new, old, t);         
+    write_body(new, old, t, cw);         
 
     // finish, close file
     close_file(old);
@@ -94,7 +94,7 @@ void write_header(FILE* fp, const Tree* tr){
     // head includes three parts: 
     //      num of different char, pseudo_eof char, tree
     // output byte by byte
-
+    assert(tr->leaf_count <= 256);
     putc((Byte) tr->leaf_count, fp);    // first byte, number of leaf nodes
     putc((Byte) 'a', fp);      // this is the second byte of the file, will be replaced with the number of pads later
     write_header_tree(fp, tr);
@@ -147,8 +147,8 @@ void write_header_tree(FILE* fp, const Tree* tr){
             // print the data, but consider leaf and non-leaf situations
             if (root->left != NULL || root->right != NULL){
                 // non-leaf node, add bit 1
-                b = b << 1;
-                b |= 0;
+                b <<= 1;
+                b |= 0;             // actually no need for this line, but keep it here
                 b_count++;
                 if (b_count == 8){
                     // print to file
@@ -160,7 +160,7 @@ void write_header_tree(FILE* fp, const Tree* tr){
             }
             else{ 
                 // leaf node, add 1 and the char
-                b = b << 1;
+                b <<= 1;
                 b |= 1;
                 b_count++;
                 if (b_count == 8){
@@ -172,14 +172,14 @@ void write_header_tree(FILE* fp, const Tree* tr){
                 else{
                     // b_count < 8, we need to add 8 bits
                     // first shift left and determine how many bits
-                    b = b << (8 - b_count);
+                    b <<= (8 - b_count);
                     Byte add_to_b = (root->b) >> b_count;
                     b |= add_to_b;
                     putc(b, fp);
                     b = 0;
                     // now add the remaining bits
                     Byte mask = 255 >> (8 - b_count);
-                    b = (root->b) & mask;
+                    b = ((root->b) & mask);
                     // b_count remain not change
                 }
             }
@@ -200,32 +200,36 @@ void write_header_tree(FILE* fp, const Tree* tr){
 }
 
 
-void write_body(FILE* new, FILE* old, const FreqTable* t){
+void write_body(FILE* new, FILE* old, const FreqTable* t, CodeWord** cw){
     assert(new != NULL && old != NULL);
-    assert(t != NULL);
+    assert(t != NULL && cw != NULL);
+
+    // !!!!!!!! some codeword may have length more than 8 !!!!!!!!
+    // so use iteration to bring down the byte size 8 per time
 
     Byte old_byte;      // as a buffer, read the old file
     // the following two is the actual output, shorter code
     Byte b = 0;
     int b_count = 0;    // count number of bits used already (should count from left end)
-    Byte cw = 0;        // codeword for each byte
-    int cw_count = 0;   // count number of bits needed (count from right end)
 
     // does not need to rewind, fp is already at the beginning
     // byte is unsigned char
     // get the file size and then use the for loop
     long size = file_size(old);
+
     for (long i = 0; i < size; i++){
         old_byte = getc(old);           // get the original byte
 
-        // get the cw and cw_count
-        cw = t->buckets[(int) old_byte]->codeword;
-        cw_count = t->buckets[(int) old_byte]->cw_count;
+        // now we have the char, cw is in int array[] at cw[(int)old_byte]->array[]
+        int j = 0;
+        while (j < cw[(int)old_byte]->num){
+            b <<= 1;    // pad a zero 
+            if (cw[(int)old_byte]->array[j] == 1){
+                b |= 1;
+            }
 
-        if (b_count + cw_count <= 8){   
-            b <<= cw_count;
-            b |= cw;
-            b_count += cw_count;
+            b_count++;
+            j++;
 
             if (b_count == 8){
                 putc(b, new);
@@ -233,19 +237,9 @@ void write_body(FILE* new, FILE* old, const FreqTable* t){
                 b_count = 0;
             }
         }
-        else{ // b_count + cw_count > 8
-            b <<= (8 - b_count);
-            Byte add_to_b = cw >> (b_count + cw_count - 8); // !!!!!!!!
-            b |= add_to_b;
-            putc(b, new);
-            b = 0;
-            // now add the remaining bits
-            Byte mask = 255 >> (8 - (cw_count + b_count - 8));
-            b = cw & mask;
-            b_count = cw_count + b_count - 8;     
-        }
     }
 
+    // finish all paragraphs
     // deal with the eof sign, check how many bits are needed to pad
     // and then modify the second byte of the file, 00000111 => padded three bits
     

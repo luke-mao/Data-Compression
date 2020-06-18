@@ -19,4 +19,4 @@ file.o 				: file.c
 byte.o 				: byte.c
 
 clean : 
-	rm -f $(BINS) $(LIBS)
+	rm -f $(BINS) $(LIBS) *huff dehuff*

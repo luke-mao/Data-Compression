@@ -11,8 +11,10 @@
 void destroy_tree_func(TreeNode*);
 // func for tree debug  
 void post_order_traversal_test_func(TreeNode* trnode);
+// func for finding the max value
+int max(const int a, const int b);
 // func for get_codeword
-void get_codeword_func(TreeNode*, FreqTable*, Byte, int);
+void get_codeword_func(TreeNode* trnode, CodeWord** cw, int array[], int top);
 
 
 // priority queue implementation
@@ -69,6 +71,7 @@ void pq_insert(NodePQ* pq, TreeNode* n){
     // during insert, first: the pq->current++
     // the smallest freq is located at the rightmost of the array
     // linear scan all existing freq
+    // pq->current: current number of nodes in the queue
     int idx = 0;
     while (idx < pq->current){
         // the freq in the pq decreases with increasing index
@@ -162,6 +165,9 @@ TreeNode* create_tree_node(Byte b, long freq, TreeNode* left, TreeNode* right){
 
 
 void fill_tree(Tree* tr, NodePQ* pq){
+
+    assert(tr->leaf_count == pq->current);
+
     // given the tree and the node priority queue, fill the tree
     // the priority queue is filled with all nodes 
     // when the loop ends, there should be only 1 thing, which is the root node
@@ -180,6 +186,28 @@ void fill_tree(Tree* tr, NodePQ* pq){
     }
 
     tr->root = pq_pop(pq);
+
+    // pq should be empty now
+    // pq_scan(pq);
+    return;
+}
+
+
+void pq_scan(const NodePQ* pq){
+    assert(pq != NULL);
+
+    fprintf(stdout, "Priority Queue scan: large freq -> small freq\n");
+    fprintf(stdout, "pq->total=%d, pq->current=%d\n", pq->total, pq->current);
+    for (int i = 0; i < pq->total; i++){
+        if (pq->nodes[i] != NULL){
+            fprintf(stdout, 
+                    "Node %d: char=(%c)(%d), freq=%ld\n", 
+                    i, pq->nodes[i]->b, pq->nodes[i]->b, pq->nodes[i]->freq
+            );
+        }
+    }
+
+    fprintf(stdout, "Scan finish\n");
     return;
 }
 
@@ -288,29 +316,54 @@ void post_order_traversal_test_no_recursion(const Tree* tr){
 }
 
 
-void get_codeword(Tree* tr, FreqTable* t){
+void get_codeword(Tree* tr, CodeWord** cw){
     // after the finalize of the tree, get the codeword and store in the freqtable
-    get_codeword_func(tr->root, t, (Byte) 0, 0);
+    int array[get_tree_height(tr->root)];
+    get_codeword_func(tr->root, cw, array, 0);
     return;
 }
 
 
-void get_codeword_func(TreeNode* trnode, FreqTable* t, Byte codeword, int count){
+void get_codeword_func(TreeNode* trnode, CodeWord** cw, int array[], int top){
     if (trnode != NULL){
         if (trnode->left == NULL && trnode->right == NULL){
-            // a leaf node
-            t->buckets[(int) (trnode->b)]->codeword = codeword;
-            t->buckets[(int) (trnode->b)]->cw_count = count;
+            // leaf node
+            create_cw_with_index(cw, (int)trnode->b, top);
+            // copy the cw
+            for (int i = 0; i < top; i++){
+                (cw[(int)trnode->b]->array)[i] = array[i];
+            }
         }
         else{
-            count++;
-            codeword <<= 1;  // shift 1 position, added position is 0
-            get_codeword_func(trnode->left, t, codeword, count);
-            codeword |= 1;  // added position change to 1
-            get_codeword_func(trnode->right, t, codeword, count);
+            array[top] = 0;
+            get_codeword_func(trnode->left, cw, array, top+1);
+            array[top] = 1;
+            get_codeword_func(trnode->right, cw, array, top+1);
         }
     }
+
     return;
+}
+
+
+// return the max height of the tree
+int get_tree_height(const TreeNode* root){
+    if (root == NULL){
+        return 0;
+    }
+    else{
+        return 1 + max(get_tree_height(root->left), get_tree_height(root->right));
+    }
+}
+
+
+int max(const int a, const int b){
+    if (a>b){
+        return a;
+    }
+    else{
+        return b;
+    }
 }
 
 

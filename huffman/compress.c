@@ -39,22 +39,39 @@ int main(int argc, char *argv[]){
 
     // print out the tree
     // post_order_traversal_test(tr);
+    // fprintf(stdout, "Tree height = %d\n", get_tree_height(tr->root));
     // fprintf(stdout, "\n");
 
     // now base on the tree, get the codeword and fill into freq_table
     // freq table has "codeword" in each bucket
 
-    get_codeword(tr, t);
-    print_table_codeword(t);
-    fprintf(stdout, "\n");
+    CodeWord** cw = create_cw(); 
+    get_codeword(tr, cw);
+    // print_cw(cw);
+    // fprintf(stdout, "\n");
 
     // compress
-    char* out_file_name = compress(argv[1], t, tr);
+    char* out_file_name = compress(argv[1], t, tr, cw);
     compress_stats(argv[1], out_file_name);         // second use of the file
+
+    // examine the problem of T and comma
+    // TreeNode* root = tr->root;
+    // root = root->left->left->left->right->right->right;
+
+    // if (root->left == NULL && root->right == NULL){
+    //     printf("leaf node (%c)(%d)\n", root->b, root->b);
+    // }
+
+    // root = root->right;
+    // if (root == NULL){
+    //     printf("right is null\n");
+    // }
+
 
     destroy_table(t);
     destroy_pq(pq);
     destroy_tree(tr);
+    destroy_cw(cw);
     return 0;
 }
 
