@@ -6,26 +6,32 @@
 #include <stdbool.h>
 
 // hash dictionary component
-typedef char* Key;
-typedef unsigned int Index;
+typedef int Index;
 
+// 12 bits
+#define SIZE_LIMIT 4096
+
+// reserve 256 for EOF, and 257 for reflush dictionary
+#define INDEX_EOR 256
+#define INDEX_REFLUSH 257
 
 // hash dictionary node and format
 struct _Node{
-    Key key;
-    Index i;
+    char* key;
+    Index idx;
     struct _Node* next;
 };
-typedef struct _Node Node;
+typedef struct _Node* Node;
 
-struct _Dic{
-    Index threshold;
+struct _Dictionary{
     Index size;
     Index current_num;
-    Node** nodes;
+    Node* nodes;
 };
-typedef struct _Dic* Dictionary;
+typedef struct _Dictionary* Dictionary;
 
+// hash function
+Index calculate_index(const char*);
 
 // hash table functions
 // create
@@ -39,9 +45,10 @@ bool dictionary_is_full(Dictionary);
 
 // check if the key exist, 
 // if exist return the index, if not return -1 
-Index dictionary_is_key_exist(Dictionary, const char* key);
+Index dictionary_search(Dictionary, const char* key);
 // insert
-Index dictionary_insert(Dictionary, const char* key);
+Index dictionary_insert(Dictionary d, const char* key, Index idx);
+// update current_num
 
 
 #endif 
