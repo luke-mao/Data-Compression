@@ -6,10 +6,10 @@
 #include <stdbool.h>
 
 // open file for read, mode = rb
-FILE* open_file(const char* file_name);
+FILE* open_file_for_read(const char* file_name);
 
 // open file for write, mode = wb         
-FILE* open_file_write(const char* file_name);   
+FILE* open_file_for_write(const char* file_name);   
 
 // close file
 FILE* close_file(FILE* fp);

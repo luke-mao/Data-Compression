@@ -6,7 +6,7 @@
 #include "file.h"
 
 // open the file, exit if error during opening
-FILE* open_file(const char* file_name){
+FILE* open_file_for_read(const char* file_name){
     FILE* fp = fopen(file_name, "rb");
     if (fp == NULL){
         fprintf(stderr, "Error opening file \"%s\"\n", file_name);
@@ -17,7 +17,7 @@ FILE* open_file(const char* file_name){
 }
 
 
-FILE* open_file_write(const char* file_name){
+FILE* open_file_for_write(const char* file_name){
     FILE* fp = fopen(file_name, "wb");
     if (fp == NULL){
         fprintf(stderr, "Error opening file \"%s\"\n", file_name);

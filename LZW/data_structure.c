@@ -5,6 +5,12 @@
 #include "data_structure.h"
 
 
+// define the hash table capacity
+// 4096 * capacity factor
+// in order to reduce hash collision
+#define CAPACITY (SIZE_LIMIT * CAPACITY_FACTOR)
+
+
 // create an empty node
 Node node_create(const Key k, CodeWord cw, Node next);
 // delete the node
@@ -13,14 +19,14 @@ Node node_delete(Node);
 
 // calculate the hash value
 Index calculate_index(const char* s){
-    long val = 0;
+    unsigned long val = 0;
 
     while (*s != '\0'){
-        val = (val << 5) + *s;
+        val = (val << 5) + (unsigned char) *s;
         s += 1;         
     }
 
-    val = val % SIZE_LIMIT;
+    val = val % CAPACITY;
     return (Index) val;
 }
 
@@ -35,22 +41,23 @@ Dictionary dictionary_create(void){
         exit(EXIT_FAILURE);
     }
 
-    d->current_num = 256 + 2; // initially 256 char + 1 for EOF + 1 for reflush   
-    d->nodes = (Node*) malloc (SIZE_LIMIT * sizeof(Node));
+    d->nodes = (Node*) malloc (CAPACITY * sizeof(Node));
     if (d->nodes == NULL){
         fprintf(stderr, "Memory error: malloc nodes\n");
         exit(EXIT_FAILURE);
     }
 
-    for (Index i = 0; i < SIZE_LIMIT; i++){
+    for (Index i = 0; i < CAPACITY; i++){
         d->nodes[i] = NULL;
     }
 
     // fill the hash table with initial values 0 - 255
-    for (CodeWord i = 0; i < 255; i++){
+    for (Index i = 0; i < 255; i++){
         char ch = (char) i;
-        dictionary_insert(d, &ch, i);
+        dictionary_insert(d, &ch);
     }
+
+    d->current_num = 256 + 2; // initially 256 char + 1 for EOF + 1 for reflush   
 
     return d;
 }
@@ -61,7 +68,7 @@ Dictionary dictionary_destroy(Dictionary d){
     assert(d != NULL);
 
     // use recursion to free all nodes
-    for (Index i = 0; i < SIZE_LIMIT; i++){
+    for (Index i = 0; i < CAPACITY; i++){
         if (d->nodes[i] != NULL){
             node_delete(d->nodes[i]);
         }
@@ -70,6 +77,7 @@ Dictionary dictionary_destroy(Dictionary d){
     free(d->nodes);
     d->nodes = NULL;
     free(d);
+    d = NULL;
     return d;
 }
 
@@ -77,7 +85,7 @@ Dictionary dictionary_destroy(Dictionary d){
 // reset,  = destroy + create
 Dictionary dictionary_reset(Dictionary d){
     assert(d != NULL);
-    dictionary_destroy(d);
+    d = dictionary_destroy(d);
     d = dictionary_create();
     return d;
 }
@@ -86,6 +94,9 @@ Dictionary dictionary_reset(Dictionary d){
 // check if is full, if full, need reset
 bool dictionary_is_full(Dictionary d){
     assert(d != NULL);
+
+    // note that the capacity is a multiple of 4096
+    // but when we reach 4096 items, we do the reflush !!!
     return d->current_num == SIZE_LIMIT;
 }
 
@@ -119,10 +130,15 @@ CodeWord dictionary_search(Dictionary d, const Key k){
 // insert key-cw pair into the dictionary
 // if hash index position is null, insert
 // if not null, find the end of the linked table, then insert
-void dictionary_insert(Dictionary d, const Key k, CodeWord cw){
+CodeWord dictionary_insert(Dictionary d, const Key k){
     assert(d != NULL && k != NULL);
 
+    // calculate the hash index
     Index hidx = calculate_index(k);
+
+    // assign the codeword
+    CodeWord cw = d->current_num;       
+
     if (d->nodes[hidx] == NULL){
         d->nodes[hidx] = node_create(k, cw, NULL);
     }
@@ -136,7 +152,7 @@ void dictionary_insert(Dictionary d, const Key k, CodeWord cw){
 
     // update the counter
     d->current_num += 1;
-    return hidx;
+    return cw;
 }
 
 
@@ -147,12 +163,12 @@ void dictionary_print(Dictionary d){
     fprintf(stdout, "-----Dictionary print-----\n");
     fprintf(stdout, "Size = %d, current_num = %d\n", SIZE_LIMIT, d->current_num);
 
-    for (Index i = 0; i < SIZE_LIMIT; i++){
+    for (Index i = 0; i < CAPACITY; i++){
         if (d->nodes[i] != NULL){
             Node n = d->nodes[i];
             fprintf(stdout, "[%d]  ", i);
             while (n != NULL){
-                fprintf(stdout, "%s => %d, ", n->k, n->cw);
+                fprintf(stdout, "%s => %d ", n->k, n->cw);
                 n = n->next;
             }
             fprintf(stdout, "\n");
@@ -217,9 +233,11 @@ Array array_create(void){
 
     a->current_num = 256 + 2;
 
+    // here we only need 4096 items
+    // since here we do not perform hash, so no hash collision
     a->nodes = (char**) malloc (SIZE_LIMIT * sizeof(char*));
     if (a->nodes == NULL){
-        fprint(stderr, "Memory error: array create nodes\n");
+        fprintf(stderr, "Memory error: array create nodes\n");
         exit(EXIT_FAILURE);
     }
 
@@ -231,7 +249,7 @@ Array array_create(void){
 }
 
 
-// delete 
+// clean the array
 Array array_destroy(Array a){
     assert(a != NULL);
 
@@ -253,7 +271,7 @@ Array array_destroy(Array a){
 Array array_reset(Array a){
     assert(a != NULL);
     a = array_destroy(a);
-    a = array_create(a);
+    a = array_create();
     return a;
 }
 
@@ -268,12 +286,32 @@ bool array_is_full(const Array a){
 // search using index, return the string
 // Key prev is included to avoid the unseen mistake
 // that during compression, the key is created then used straight away
-// without any time gap
+// without any time gap.
+// Also need to take care with the return key
+// if simply print it, it is fine
+// but if need to modify, make sure use strcpy first
+// do not change on the returned pointer directly
 Key array_search(Array a, const Index idx, const Key prev){
-    if (a->nodes[idx] != NULL){
+    assert(a != NULL && idx >= 0);
+
+    // if the index <= 255, create the key and return
+    // since the bucket is actually NULL
+    if (idx <= 255){
+        Key ch = (Key) malloc (2 * sizeof(char));
+        if (ch == NULL){
+            fprintf(stderr, "Memory error: array search\n");
+            exit(EXIT_FAILURE);
+        }
+        ch[0] = idx;
+        ch[1] = '\0';
+        return ch;
+    }
+    else if (a->nodes[idx] != NULL){
         return a->nodes[idx];
     }
     else{
+        // !!! the only exception for LZW
+
         // the idx bucket is empty
         // use prev, concat with the prefix (first letter) 
         // of "prev" string, 
@@ -284,9 +322,11 @@ Key array_search(Array a, const Index idx, const Key prev){
             exit(EXIT_FAILURE);
         }
 
+        // copy the prev, and copy the first letter of prev again
         strcpy(prev_copy, prev);
         strncat(prev_copy, prev, 1);
 
+        // also insert into the array
         array_insert(a, prev_copy);
         return prev_copy;
     }
@@ -304,7 +344,7 @@ void array_insert(Array a, const Key k){
     }
 
     strcpy(a->nodes[a->current_num], k);
-    a->current_num += 1;
+    a->current_num += 1;    // update the counter
     return;
 }
 
@@ -317,8 +357,11 @@ void array_print(const Array a){
     fprintf(stdout, "Size = %d, current_num = %d\n", SIZE_LIMIT, a->current_num);
 
     for (Index i = 0; i < SIZE_LIMIT; i++){
-        if (a->nodes[i] != NULL){
-            fprintf("%d => %s\n", i, a->nodes[i]);
+        if (i <= 255){
+            fprintf(stdout, "%d => %c\n", i, i);
+        }
+        else if (a->nodes[i] != NULL){
+            fprintf(stdout, "%d => %s\n", i, a->nodes[i]);
         }
     }
 

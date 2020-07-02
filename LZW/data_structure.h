@@ -5,19 +5,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
+
+
+// 12 bits
+#define BITS 12
+#define SIZE_LIMIT (int) pow(2, 12)
+#define CAPACITY_FACTOR 2
 
 
 // hash dictionary component
-typedef int Index;          // max = 4096
+typedef unsigned int Index;          // max = 4096
 typedef int CodeWord;       //  max  = 4096
 typedef char* Key;          // key is a string
 
-// 12 bits
-#define SIZE_LIMIT 4096
-
 
 // reserve 256 for EOF, and 257 for reflush dictionary
-#define INDEX_EOR 256
+#define INDEX_EOF 256
 #define INDEX_REFLUSH 257
 
 
@@ -54,7 +58,7 @@ bool dictionary_is_full(const Dictionary);
 // if exist return the index, if not return -1 
 CodeWord dictionary_search(Dictionary, const Key k);
 // insert
-void dictionary_insert(Dictionary, const Key k, CodeWord cw);
+CodeWord dictionary_insert(Dictionary, const Key k);
 
 // debug use
 void dictionary_print(Dictionary);
