@@ -51,7 +51,7 @@ int main(int argc, char** argv){
     
     // output use
     int b = 0;
-    int b_position = 0;        
+    int b_position = 0;       
 
     while ((c=getc(fp)) != EOF){
         // form pc
@@ -90,9 +90,14 @@ int main(int argc, char** argv){
     print_to_file(fp_out, &b, &b_position, INDEX_EOF);
     final_print_to_file(fp_out, &b, &b_position);
 
+    // close file
     close_file(fp);
     close_file(fp_out);
 
+    // free the memory
+    dictionary_destroy(d);
+
+    // statistics
     compress_stats(filename, filename_out);
 
     return 0;

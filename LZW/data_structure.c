@@ -52,11 +52,6 @@ Dictionary dictionary_create(void){
     }
 
     // fill the hash table with initial values 0 - 255
-    for (Index i = 0; i < 255; i++){
-        char ch = (char) i;
-        dictionary_insert(d, &ch);
-    }
-
     d->current_num = 256 + 2; // initially 256 char + 1 for EOF + 1 for reflush   
 
     return d;
@@ -105,6 +100,12 @@ bool dictionary_is_full(Dictionary d){
 // if exist return the index, if not return -1 
 CodeWord dictionary_search(Dictionary d, const Key k){
     assert(d != NULL && k != NULL);
+
+    // if it is a single char, simply return its int
+    if (strlen(k) == 1){
+        return (int)k[0];
+    }
+
 
     Index hidx = calculate_index(k);
     if (d->nodes[hidx] == NULL){
@@ -164,7 +165,20 @@ void dictionary_print(Dictionary d){
     fprintf(stdout, "Size = %d, current_num = %d\n", SIZE_LIMIT, d->current_num);
 
     for (Index i = 0; i < CAPACITY; i++){
-        if (d->nodes[i] != NULL){
+
+        if (i <= 255){
+            // single char range
+            fprintf(stdout, "[%d] %c => %d ", i, i, i);
+            if (d->nodes[i] != NULL){
+                Node n = d->nodes[i];
+                while (n != NULL){
+                    fprintf(stdout, "%s => %d ", n->k, n->cw);
+                    n = n->next;
+                }
+            }
+            fprintf(stdout, "\n");
+        }
+        else if (d->nodes[i] != NULL){
             Node n = d->nodes[i];
             fprintf(stdout, "[%d]  ", i);
             while (n != NULL){
@@ -261,7 +275,9 @@ Array array_destroy(Array a){
     }
 
     free(a->nodes);
+    puts("3");
     free(a);
+    puts("4");
     a = NULL;
     return a;
 }
@@ -270,7 +286,9 @@ Array array_destroy(Array a){
 // reset = destroy + create
 Array array_reset(Array a){
     assert(a != NULL);
+    puts("1");
     a = array_destroy(a);
+    puts("2");
     a = array_create();
     return a;
 }
