@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// concat s1 followed by s2
-// return a new pointer, so the inputs are not changed
-char* string_concat(const char*, const char*);
+// append the char c at the end of string prev
+char* string_concat(const char* prev, const int c);
 
 #endif

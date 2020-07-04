@@ -98,14 +98,17 @@ bool dictionary_is_full(Dictionary d){
 
 // check if the key exist, 
 // if exist return the index, if not return -1 
-CodeWord dictionary_search(Dictionary d, const Key k){
+int dictionary_search(Dictionary d, const Key k){
     assert(d != NULL && k != NULL);
 
     // if it is a single char, simply return its int
     if (strlen(k) == 1){
-        return (int)k[0];
+        int idx = k[0];
+        if (idx < 0){
+            idx += 256;
+        }
+        return idx;
     }
-
 
     Index hidx = calculate_index(k);
     if (d->nodes[hidx] == NULL){
@@ -203,7 +206,7 @@ Node node_create(const Key k, CodeWord cw, Node next){
     }
 
     // allocate memory
-    n->k = (char*)malloc(strlen(k)+1); // add 1 for \0
+    n->k = (char*)malloc((strlen(k)+1)*sizeof(char)); // add 1 for \0
     if (n->k == NULL){
         fprintf(stderr, "Memory error: node copy key\n");
         exit(EXIT_FAILURE);
@@ -267,6 +270,8 @@ Array array_create(void){
 Array array_destroy(Array a){
     assert(a != NULL);
 
+    // array_print(a);
+
     for (Index i = 0; i < SIZE_LIMIT; i++){
         if (a->nodes[i] != NULL){
             free(a->nodes[i]);
@@ -274,10 +279,8 @@ Array array_destroy(Array a){
         }
     }
 
-    free(a->nodes);
-    puts("3");
+    free(a->nodes); // ?? this causes the problem
     free(a);
-    puts("4");
     a = NULL;
     return a;
 }
@@ -286,10 +289,10 @@ Array array_destroy(Array a){
 // reset = destroy + create
 Array array_reset(Array a){
     assert(a != NULL);
-    puts("1");
     a = array_destroy(a);
-    puts("2");
+    assert(a == NULL);
     a = array_create();
+    assert(a != NULL);
     return a;
 }
 
@@ -309,6 +312,8 @@ bool array_is_full(const Array a){
 // if simply print it, it is fine
 // but if need to modify, make sure use strcpy first
 // do not change on the returned pointer directly
+//
+// malloc and copy for all answers.
 Key array_search(Array a, const Index idx, const Key prev){
     assert(a != NULL && idx >= 0);
 
@@ -325,34 +330,48 @@ Key array_search(Array a, const Index idx, const Key prev){
         return ch;
     }
     else if (a->nodes[idx] != NULL){
-        return a->nodes[idx];
-    }
-    else{
-        // !!! the only exception for LZW
-
-        // the idx bucket is empty
-        // use prev, concat with the prefix (first letter) 
-        // of "prev" string, 
-        // and add it to the array
-        Key prev_copy = (Key) malloc (strlen(prev)+2);
-        if (prev_copy == NULL){
-            fprintf(stderr, "Memory error: array search, prev_copy\n");
+        // malloc and then strcmp
+        Key result = (char*)malloc((strlen(a->nodes[idx])+1)*sizeof(char));
+        if (result == NULL){
+            fprintf(stderr, "Memory error: array search\n");
             exit(EXIT_FAILURE);
         }
+        strcpy(result, a->nodes[idx]);
+        return result;
+    }
+    else{
+        // there is one exception for LZW, detailed in this block
+        if (idx == a->current_num){
+            // !!! the only exception for LZW
 
-        // copy the prev, and copy the first letter of prev again
-        strcpy(prev_copy, prev);
-        strncat(prev_copy, prev, 1);
+            // the idx bucket is empty
+            // use prev, concat with the prefix (first letter) 
+            // of "prev" string, 
+            // and add it to the array
+            Key prev_copy = (Key) malloc (strlen(prev)+2);
+            if (prev_copy == NULL){
+                fprintf(stderr, "Memory error: array search, prev_copy\n");
+                exit(EXIT_FAILURE);
+            }
 
-        // also insert into the array
-        array_insert(a, prev_copy);
-        return prev_copy;
+            // copy the prev, and copy the first letter of prev again
+            strcpy(prev_copy, prev);
+            strncat(prev_copy, prev, 1);
+
+            // also insert into the array
+            array_insert(a, prev_copy);
+            return prev_copy;
+        }
+        else{
+            fprintf(stderr, "error array search index = %d\n", idx);
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
 
 // insert, no codeword required, simply insert in first in order
-void array_insert(Array a, const Key k){
+Index array_insert(Array a, const Key k){
     assert(a != NULL && k != NULL);
 
     a->nodes[a->current_num] = (char*) malloc (strlen(k)+1);
@@ -363,7 +382,7 @@ void array_insert(Array a, const Key k){
 
     strcpy(a->nodes[a->current_num], k);
     a->current_num += 1;    // update the counter
-    return;
+    return a->current_num - 1;
 }
 
 
@@ -376,7 +395,7 @@ void array_print(const Array a){
 
     for (Index i = 0; i < SIZE_LIMIT; i++){
         if (i <= 255){
-            fprintf(stdout, "%d => %c\n", i, i);
+            fprintf(stdout, "%d => %c\n", i, (char) i);
         }
         else if (a->nodes[i] != NULL){
             fprintf(stdout, "%d => %s\n", i, a->nodes[i]);

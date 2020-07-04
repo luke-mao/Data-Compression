@@ -7,8 +7,16 @@
 #include "data_structure.h"
 #include "file.h"
 
-
+// delete .LZW, and add deLZW at front
 char* create_decompressed_file_name(const char*);
+
+// decompression cycle, each cycle ends when reach index = reflush
+bool decompression_cycle(
+    int* buffer, int* buffer_bits_not_read,
+    Array a, FILE* fp_in, FILE* fp_out
+);
+
+// print input and output file names
 void decompress_status(const char* file_in, const char* file_out);
 
 
@@ -39,108 +47,33 @@ int main(int argc, char** argv){
     // create the array
     Array a = array_create();
 
-    // read input file, every time extract BITS (12) bits from the input buffer
-    // then determine the content using the array
+    
+    // decompression
+    int buffer = fgetc(fp_in); 
+    int buffer_bits_not_read = 8;
+    // return false if meet reflush, true if meet eof
+    bool finish = decompression_cycle(
+        &buffer, &buffer_bits_not_read,
+        a, fp_in, fp_out
+    );
 
-    // pseudo_code: read(c), output c, and then p = c
-    int mask = 0;
-    int buffer = getc(fp_in);
-    int buffer_bits_not_read = 0;       // = 3: means 3 bits left to read next time
-
-    int c_bits = buffer;     // read c
-    int c_bits_in = 8;  // have got 8 bits now, so need 4 extra bits
-    buffer = getc(fp_in);    
-    buffer_bits_not_read = 8;       // total 8 bits not read
-
-    while (c_bits_in != BITS){
-        mask = (1 << (buffer_bits_not_read - 1));
-        c_bits <<= 1;
-        c_bits |= ((buffer & mask) >> (buffer_bits_not_read-1));
-
-        c_bits_in += 1;
-        buffer_bits_not_read -= 1;
-
-        if (buffer_bits_not_read == 0){
-            buffer = getc(fp_in);
-            buffer_bits_not_read = 8;
-        }
-    }
-
-    // now we have the c, output c
-    Key c_key, prev_key;
-    c_key = array_search(a, c_bits, NULL);
-    fputs(c_key, fp_out);
-    prev_key = c_key;
-
-    // clear c
-    c_bits = 0;
-    c_bits_in = 0;
-
-    // we stop the reading when read pseudo_eof (index = 256)
-    // reflush the array when read index = 257
-    while (true){
-        // read bits
-        while (c_bits_in != BITS){
-            // read another char if needed
-            if (buffer_bits_not_read == 0){
-                buffer = fgetc(fp_in);
-                buffer_bits_not_read = 8;
-            }
-
-            // each time just add one bit, easier to code
-            mask = 1 << (buffer_bits_not_read - 1);
-            c_bits <<= 1;
-            c_bits |= ((buffer & mask) >> (buffer_bits_not_read-1));
-
-            c_bits_in += 1;
-            buffer_bits_not_read -= 1;
-        }
-
-        printf("%d\n", c_bits);
-
-        // now we have the char, determine if it is 256 or 257
-        if (c_bits == INDEX_EOF){
-            break;
-        }
-
-        if (c_bits == INDEX_REFLUSH){
-            a = array_reset(a);
-
-            puts("reflush ok");
-            // update the bit
-            c_bits = 0;
-            c_bits_in = 0;
-            continue;
-        }
-
-        // for normal index
-        // output dict[c], 
-        c_key = array_search(a, c_bits, prev_key);
-        fputs(c_key, fp_out);
-
-        // add p + dict[c][0] to dict
-        prev_key = (Key)realloc(prev_key, strlen(prev_key)+1+1);
-        if (prev_key == NULL){
-            fprintf(stderr, "Memory error, decomprss, prev_key\n");
-            exit(EXIT_FAILURE);
-        }
-        // only add one char from c
-        strncat(prev_key, c_key, 1);
-        // insert into dictionary
-        array_insert(a, prev_key);
-
-        // p = dict[c]
-        prev_key = c_key;   
-
-        // clear c_bits
-        c_bits = 0;
-        c_bits_in = 0;
+    // continue the decompression until meet eof
+    while (! finish){
+        puts("dsaf");
+        // meet reflush sign, refresh array
+        a = array_reset(a);
+        finish = decompression_cycle(
+            &buffer, &buffer_bits_not_read,
+            a, fp_in, fp_out
+        );
     }
 
 
     // finish, close the file
     fclose(fp_in);
     fclose(fp_out);
+
+    array_destroy(a);
 
     decompress_status(file_in, file_out);
     free(file_out);
@@ -177,4 +110,112 @@ void decompress_status(const char* file_in, const char* file_out){
     fprintf(stdout, "Input file = \"%s\". Output file = \"%s\"\n", file_in, file_out);
 
     return ;
+}
+
+
+bool decompression_cycle(int* buffer, int* buffer_bits_not_read,
+                            Array a, FILE* fp_in, FILE* fp_out){
+    // each cycle ends whether meet reflush, or eof
+    // if reflush, return false
+    // if eof, return true
+    bool flag = false;
+    
+    int mask;
+    int curr_code = 0;
+    int curr_code_bits = 0;
+
+    // read in a code
+    while (curr_code_bits != BITS){
+        // read buffer if necessary
+        if (*buffer_bits_not_read == 0){
+            *buffer = fgetc(fp_in);
+            *buffer_bits_not_read = 8;
+        }
+
+        mask = 1 << (*buffer_bits_not_read - 1);
+        curr_code <<= 1;
+
+        curr_code |= ((*buffer & mask) >> (*buffer_bits_not_read - 1));
+
+        curr_code_bits += 1;
+        *buffer_bits_not_read -= 1;
+    }
+
+
+    // decode and print out
+    char *prev_key, *curr_key;
+    prev_key = NULL; curr_key = NULL;
+    prev_key = array_search(a, curr_code, NULL);
+    fputs(prev_key, fp_out);
+
+    // printf("code = %d\n", curr_code);
+
+
+    // while we have not reach the index eof = 256
+    while (true){
+        // every time, clear the code first
+        curr_code = 0;
+        curr_code_bits = 0;
+
+        // read in a code, store in current code
+        while (curr_code_bits != BITS){
+            // read buffer if necessary
+            if (*buffer_bits_not_read == 0){
+                *buffer = fgetc(fp_in);
+                *buffer_bits_not_read = 8;
+            }
+
+            mask = 1 << (*buffer_bits_not_read - 1);
+            curr_code <<= 1;
+
+            curr_code |= ((*buffer & mask) >> (*buffer_bits_not_read - 1));
+
+            curr_code_bits += 1;
+            *buffer_bits_not_read -= 1;
+        }
+
+        // printf("code = %d\n", curr_code);
+
+        // if code = 256, eof
+        if (curr_code == INDEX_EOF){
+            flag = true;
+            break;
+        }
+
+        // if code = 257, reflush
+        if (curr_code == INDEX_REFLUSH){
+            break;
+        }
+
+        // so now we have the new code in curr_code
+        // this returns a new malloc and strcmp pointer
+        // safe to use
+        curr_key = array_search(a, curr_code, prev_key);
+        
+        // output
+        fputs(curr_key, fp_out);
+
+        // extract the first char of the curr_key
+        // cat prev_key with the first char, and add to the dictionary
+        // +1 for \0, +1 for the new char
+        prev_key = (char*)realloc(prev_key, strlen(prev_key)+1+1);
+        if (prev_key == NULL){
+            fprintf(stderr, "Memory error: decompression, prev_key\n");
+            exit(EXIT_FAILURE);
+        }
+        // only add the first char
+        strncat(prev_key, curr_key, 1);
+        // insert into the array
+        array_insert(a, prev_key);
+
+        // finally, update the prev
+        // first free the original, then assign
+        free(prev_key);
+        prev_key = curr_key;
+    }
+    
+
+    // return true if decompression finish
+    // return false if meet reflush
+    return flag;
 }

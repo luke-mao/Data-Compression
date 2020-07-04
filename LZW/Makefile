@@ -15,4 +15,4 @@ util.o				: util.c
 file.o				: file.c
 
 clean : 
-	rm -f $(BINS) $(LIBS) *LZW
+	rm -f $(BINS) $(LIBS) *LZW deLZW*

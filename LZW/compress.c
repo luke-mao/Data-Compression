@@ -55,7 +55,7 @@ int main(int argc, char** argv){
 
     while ((c=getc(fp)) != EOF){
         // form pc
-        prev_c = string_concat(prev, (char*) &c);
+        prev_c = string_concat(prev, c);
 
         // if prev_buffer
         if (dictionary_search(d, prev_c) != -1){
@@ -64,18 +64,32 @@ int main(int argc, char** argv){
         }    
         else{
             // insert prev_c
-            dictionary_insert(d, prev_c);
+            CodeWord ccc = dictionary_insert(d, prev_c);
+            // fprintf(stdout, "code = %d\n", ccc);
+            
             // output code(p)
             // print 12 bits
-            cw = dictionary_search(d, prev);
-            // printf("%d  ", cw);
-            print_to_file(fp_out, &b, &b_position, cw);
-            prev = string_concat(NULL, (char*) &c);
+            int check = dictionary_search(d, prev);
+            if (check < 0){
+                printf("output %s| %d | %d\n", prev, prev[0], check);
+                printf("error\n");
+                exit(EXIT_FAILURE);
+            }
+            
+            // printf("output:%d\n", check);
+            print_to_file(fp_out, &b, &b_position, check);
+
+            // prev = c, but use the function to make it a string
+            prev = string_concat(NULL, c);
 
             // if the dictionary becomes full, print reflush and reset 
             if (dictionary_is_full(d)){
                 print_to_file(fp_out, &b, &b_position, INDEX_REFLUSH);
+                
+                // clear all memory and start again
                 d = dictionary_reset(d);
+                prev = NULL;
+                prev_c = NULL;
             }
         }      
     }
@@ -84,8 +98,8 @@ int main(int argc, char** argv){
     // here we need to print code(prev)
     // then print EOF sign which is 256
     // and then pad, if necessary, and close files
-    cw = dictionary_search(d, prev);
-    print_to_file(fp_out, &b, &b_position, cw);
+    int check = dictionary_search(d, prev);
+    print_to_file(fp_out, &b, &b_position, check);
 
     print_to_file(fp_out, &b, &b_position, INDEX_EOF);
     final_print_to_file(fp_out, &b, &b_position);

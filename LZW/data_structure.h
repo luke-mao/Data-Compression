@@ -16,7 +16,7 @@
 
 // hash dictionary component
 typedef unsigned int Index;          // max = 4096
-typedef int CodeWord;       //  max  = 4096
+typedef unsigned int CodeWord;       //  max  = 4096
 typedef char* Key;          // key is a string
 
 
@@ -56,7 +56,7 @@ bool dictionary_is_full(const Dictionary);
 
 // check if the key exist, 
 // if exist return the index, if not return -1 
-CodeWord dictionary_search(Dictionary, const Key k);
+int dictionary_search(Dictionary, const Key k);
 // insert
 CodeWord dictionary_insert(Dictionary, const Key k);
 
@@ -84,7 +84,7 @@ bool array_is_full(const Array);
 // search using index, return the string
 Key array_search(Array, const Index, Key prev);
 // insert
-void array_insert(Array, const Key k);
+Index array_insert(Array, const Key k);
 
 // debug use
 void array_print(const Array);
