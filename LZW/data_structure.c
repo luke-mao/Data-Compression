@@ -12,21 +12,35 @@
 
 
 // create an empty node
-Node node_create(const Key k, CodeWord cw, Node next);
+Node node_create(const Key k, const CodeWord cw, Node next);
 // delete the node
 Node node_delete(Node);
 
 
 // calculate the hash value
 Index calculate_index(const char* s){
-    unsigned long val = 0;
+    long val = 0;
+    int ch;
 
     while (*s != '\0'){
-        val = (val << 5) + (unsigned char) *s;
+        // extract this char, make sure it is positive
+        ch = *s;
+        if (ch < 0){
+            ch += 256;
+        }
+
+        // calculate the val, *32 then add the char
+        val = (val << 3) + ch;
+        // move to the next char
         s += 1;         
     }
 
     val = val % CAPACITY;
+
+    if (val < 0){
+        printf("error, val = %ld\n", val);
+    }
+
     return (Index) val;
 }
 
@@ -98,7 +112,7 @@ bool dictionary_is_full(Dictionary d){
 
 // check if the key exist, 
 // if exist return the index, if not return -1 
-int dictionary_search(Dictionary d, const Key k){
+CodeWord dictionary_search(Dictionary d, const Key k){
     assert(d != NULL && k != NULL);
 
     // if it is a single char, simply return its int
@@ -110,6 +124,7 @@ int dictionary_search(Dictionary d, const Key k){
         return idx;
     }
 
+    // for string of length >= 2
     Index hidx = calculate_index(k);
     if (d->nodes[hidx] == NULL){
         return -1;
@@ -139,6 +154,7 @@ CodeWord dictionary_insert(Dictionary d, const Key k){
 
     // calculate the hash index
     Index hidx = calculate_index(k);
+    assert(hidx >= 0);
 
     // assign the codeword
     CodeWord cw = d->current_num;       
@@ -198,7 +214,7 @@ void dictionary_print(Dictionary d){
 
 
 // create a node, initialize with NULL next pointer
-Node node_create(const Key k, CodeWord cw, Node next){
+Node node_create(const Key k, const CodeWord cw, Node next){
     Node n = (Node) malloc (sizeof(struct _Node));
     if (n == NULL){
         fprintf(stderr, "Memory error: malloc, node\n");
@@ -248,6 +264,8 @@ Array array_create(void){
         exit(EXIT_FAILURE);
     }
 
+    // occupy the first 258+2 positions, but do not set anything
+    // so that the whole ram usage can be smaller
     a->current_num = 256 + 2;
 
     // here we only need 4096 items
@@ -279,7 +297,7 @@ Array array_destroy(Array a){
         }
     }
 
-    free(a->nodes); // ?? this causes the problem
+    free(a->nodes); 
     free(a);
     a = NULL;
     return a;
@@ -289,10 +307,13 @@ Array array_destroy(Array a){
 // reset = destroy + create
 Array array_reset(Array a){
     assert(a != NULL);
+
     a = array_destroy(a);
     assert(a == NULL);
+    
     a = array_create();
     assert(a != NULL);
+    
     return a;
 }
 
@@ -314,7 +335,7 @@ bool array_is_full(const Array a){
 // do not change on the returned pointer directly
 //
 // malloc and copy for all answers.
-Key array_search(Array a, const Index idx, const Key prev){
+Key array_search(Array a, const Index idx){
     assert(a != NULL && idx >= 0);
 
     // if the index <= 255, create the key and return
@@ -329,43 +350,18 @@ Key array_search(Array a, const Index idx, const Key prev){
         ch[1] = '\0';
         return ch;
     }
-    else if (a->nodes[idx] != NULL){
+    else{
+        assert(a->nodes[idx] != NULL);
+
         // malloc and then strcmp
         Key result = (char*)malloc((strlen(a->nodes[idx])+1)*sizeof(char));
         if (result == NULL){
             fprintf(stderr, "Memory error: array search\n");
             exit(EXIT_FAILURE);
         }
+
         strcpy(result, a->nodes[idx]);
         return result;
-    }
-    else{
-        // there is one exception for LZW, detailed in this block
-        if (idx == a->current_num){
-            // !!! the only exception for LZW
-
-            // the idx bucket is empty
-            // use prev, concat with the prefix (first letter) 
-            // of "prev" string, 
-            // and add it to the array
-            Key prev_copy = (Key) malloc (strlen(prev)+2);
-            if (prev_copy == NULL){
-                fprintf(stderr, "Memory error: array search, prev_copy\n");
-                exit(EXIT_FAILURE);
-            }
-
-            // copy the prev, and copy the first letter of prev again
-            strcpy(prev_copy, prev);
-            strncat(prev_copy, prev, 1);
-
-            // also insert into the array
-            array_insert(a, prev_copy);
-            return prev_copy;
-        }
-        else{
-            fprintf(stderr, "error array search index = %d\n", idx);
-            exit(EXIT_FAILURE);
-        }
     }
 }
 
@@ -373,8 +369,9 @@ Key array_search(Array a, const Index idx, const Key prev){
 // insert, no codeword required, simply insert in first in order
 Index array_insert(Array a, const Key k){
     assert(a != NULL && k != NULL);
+    assert(! array_is_full(a));
 
-    a->nodes[a->current_num] = (char*) malloc (strlen(k)+1);
+    a->nodes[a->current_num] = (char*) malloc ((strlen(k)+1)*sizeof(char));
     if (a->nodes[a->current_num] == NULL){
         fprintf(stderr, "Memory error: array insert\n");
         exit(EXIT_FAILURE);
@@ -383,6 +380,21 @@ Index array_insert(Array a, const Key k){
     strcpy(a->nodes[a->current_num], k);
     a->current_num += 1;    // update the counter
     return a->current_num - 1;
+}
+
+
+// check if the index is in the array or not
+// i.e. the array has corresponding codeword or not
+bool array_has_this_codeword(Array a, const Index idx){
+    assert(a != NULL);
+    assert(idx >= 0);
+    
+    if (idx < 256){
+        return true;
+    }
+    else{
+        return a->nodes[idx] != NULL;
+    }
 }
 
 

@@ -4,6 +4,8 @@
 #include <string.h>
 
 
+// concat prev + char(c)
+// malloc and return a new pointer
 char* string_concat(const char* prev, const int c){
     // concat s1 followed by s2
     // return a new pointer, so the inputs are not changed
@@ -29,6 +31,6 @@ char* string_concat(const char* prev, const int c){
         result[strlen(prev)] = c;
         result[strlen(prev)+1] = '\0';
     }
-
+    
     return result;
 }

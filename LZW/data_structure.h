@@ -9,14 +9,14 @@
 
 
 // 12 bits
-#define BITS 12
-#define SIZE_LIMIT (int) pow(2, 12)
+#define BITS 13
+#define SIZE_LIMIT (int) pow(2, BITS)
 #define CAPACITY_FACTOR 2
 
 
 // hash dictionary component
-typedef unsigned int Index;          // max = 4096
-typedef unsigned int CodeWord;       //  max  = 4096
+typedef int Index;          // max = 4096
+typedef int CodeWord;       //  max  = 4096
 typedef char* Key;          // key is a string
 
 
@@ -56,7 +56,7 @@ bool dictionary_is_full(const Dictionary);
 
 // check if the key exist, 
 // if exist return the index, if not return -1 
-int dictionary_search(Dictionary, const Key k);
+CodeWord dictionary_search(Dictionary, const Key k);
 // insert
 CodeWord dictionary_insert(Dictionary, const Key k);
 
@@ -82,9 +82,11 @@ Array array_reset(Array);
 bool array_is_full(const Array);
 
 // search using index, return the string
-Key array_search(Array, const Index, Key prev);
+Key array_search(Array, const Index);
 // insert
 Index array_insert(Array, const Key k);
+// check if a codeword is in the table
+bool array_has_this_codeword(Array, const Index);
 
 // debug use
 void array_print(const Array);
