@@ -1,6 +1,17 @@
 #ifndef _DATA_STRUCTURE_H_
 #define _DATA_STRUCTURE_H_
 
+/*
+This part defines the data structure used for LZW algorithm, 
+mainly the hash dictionary used in compression, 
+and the array used in decompression.
+
+User can self defined the length of the codeword, 
+commonly 12, but can increase to 15, 16 if necessary. 
+Longer codeword can increase the compression ration, 
+however it also fails to reflect more local characteristics. 
+*/
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,15 +19,16 @@
 #include <math.h>
 
 
-// 12 bits
-#define BITS 13
-#define SIZE_LIMIT (int) pow(2, BITS)
-#define CAPACITY_FACTOR 2
+// define the fundamental amounts
+#define BITS 14                         // length for the codeword
+#define SIZE_LIMIT (int) pow(2, BITS)   // array size
+#define CAPACITY_FACTOR 2               // dictionary size = array size * factor, 
+                                        //      larger size to reduce hash collision
 
 
 // hash dictionary component
-typedef int Index;          // max = 4096
-typedef int CodeWord;       //  max  = 4096
+typedef long Index;          // for 12 bits, max = 4096
+typedef long CodeWord;       // for 12 bits, max  = 4096
 typedef char* Key;          // key is a string
 
 
@@ -40,9 +52,9 @@ struct _Dictionary{
 };
 typedef struct _Dictionary* Dictionary;
 
+
 // hash function
-// during calculation we use long,
-// but the output is in Code (int)
+// input the string and calculate the hash
 Index calculate_index(const char*);
 
 // create
@@ -69,7 +81,6 @@ struct _Array{
     Index current_num;
     char** nodes;
 };
-
 typedef struct _Array* Array;
 
 // create
@@ -90,5 +101,6 @@ bool array_has_this_codeword(Array, const Index);
 
 // debug use
 void array_print(const Array);
+
 
 #endif 

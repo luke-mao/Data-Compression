@@ -6,22 +6,25 @@
 
 
 // define the hash table capacity
-// 4096 * capacity factor
+// 4096 (12 bits) * capacity factor
 // in order to reduce hash collision
 #define CAPACITY (SIZE_LIMIT * CAPACITY_FACTOR)
 
-
-// create an empty node
+// dictionary, create an empty node
 Node node_create(const Key k, const CodeWord cw, Node next);
-// delete the node
+
+// dictionary, delete the node
 Node node_delete(Node);
 
 
 // calculate the hash value
 Index calculate_index(const char* s){
-    long val = 0;
+    assert(s != NULL);
+
+    Index val = 0;
     int ch;
 
+    // iterate around the string, extract char one by one
     while (*s != '\0'){
         // extract this char, make sure it is positive
         ch = *s;
@@ -29,19 +32,20 @@ Index calculate_index(const char* s){
             ch += 256;
         }
 
-        // calculate the val, *32 then add the char
+        // left shift the last value and then add the new char
         val = (val << 3) + ch;
         // move to the next char
         s += 1;         
     }
 
+    // extract the index, index must be >= 0 
     val = val % CAPACITY;
-
-    if (val < 0){
-        printf("error, val = %ld\n", val);
+    
+    while (val < 0){
+        val += CAPACITY;
     }
-
-    return (Index) val;
+    
+    return val;
 }
 
 
@@ -50,16 +54,10 @@ Index calculate_index(const char* s){
 // size = 4096, current_num = 258, so next index start at 258 during insert
 Dictionary dictionary_create(void){
     Dictionary d = (struct _Dictionary*) malloc (sizeof(struct _Dictionary));
-    if (d == NULL){
-        fprintf(stderr, "Memory error: malloc, dictionary");
-        exit(EXIT_FAILURE);
-    }
+    assert(d != NULL);
 
     d->nodes = (Node*) malloc (CAPACITY * sizeof(Node));
-    if (d->nodes == NULL){
-        fprintf(stderr, "Memory error: malloc nodes\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(d->nodes != NULL);
 
     for (Index i = 0; i < CAPACITY; i++){
         d->nodes[i] = NULL;
@@ -91,7 +89,9 @@ Dictionary dictionary_destroy(Dictionary d){
 }
 
 
-// reset,  = destroy + create
+// reset dictionary if it is full,
+// to reflect more local characteristics. 
+// reset = destroy + create
 Dictionary dictionary_reset(Dictionary d){
     assert(d != NULL);
     d = dictionary_destroy(d);
@@ -115,34 +115,40 @@ bool dictionary_is_full(Dictionary d){
 CodeWord dictionary_search(Dictionary d, const Key k){
     assert(d != NULL && k != NULL);
 
+    CodeWord result;
+
     // if it is a single char, simply return its int
     if (strlen(k) == 1){
         int idx = k[0];
         if (idx < 0){
             idx += 256;
         }
-        return idx;
-    }
-
-    // for string of length >= 2
-    Index hidx = calculate_index(k);
-    if (d->nodes[hidx] == NULL){
-        return -1;
+        
+        result = idx;
     }
     else{
-        // if see the exact key, then return the index
-        Node n = d->nodes[hidx];
-        while (n != NULL && strcmp(n->k, k) != 0){
-            n = n->next;
-        }
-
-        if (n == NULL){
-            return -1;
+        // for string of length >= 2
+        Index hidx = calculate_index(k);
+        if (d->nodes[hidx] == NULL){
+            result = -1;
         }
         else{
-            return n->cw;   // find the key, return the codeword
+            // if see the exact key, then return the index
+            Node n = d->nodes[hidx];
+            while (n != NULL && strcmp(n->k, k) != 0){
+                n = n->next;
+            }
+
+            if (n == NULL){
+                result = -1;
+            }
+            else{
+                result = n->cw;   // find the key, return the codeword
+            }
         }
     }
+
+    return result;
 }
 
 
@@ -181,17 +187,17 @@ void dictionary_print(Dictionary d){
     assert(d != NULL);
 
     fprintf(stdout, "-----Dictionary print-----\n");
-    fprintf(stdout, "Size = %d, current_num = %d\n", SIZE_LIMIT, d->current_num);
+    fprintf(stdout, "Size = %d, current_num = %ld\n", SIZE_LIMIT, d->current_num);
 
     for (Index i = 0; i < CAPACITY; i++){
 
         if (i <= 255){
             // single char range
-            fprintf(stdout, "[%d] %c => %d ", i, i, i);
+            fprintf(stdout, "[%ld] %c => %ld ", i, (int)i, i);
             if (d->nodes[i] != NULL){
                 Node n = d->nodes[i];
                 while (n != NULL){
-                    fprintf(stdout, "%s => %d ", n->k, n->cw);
+                    fprintf(stdout, "%s => %ld ", n->k, n->cw);
                     n = n->next;
                 }
             }
@@ -199,9 +205,9 @@ void dictionary_print(Dictionary d){
         }
         else if (d->nodes[i] != NULL){
             Node n = d->nodes[i];
-            fprintf(stdout, "[%d]  ", i);
+            fprintf(stdout, "[%ld]  ", i);
             while (n != NULL){
-                fprintf(stdout, "%s => %d ", n->k, n->cw);
+                fprintf(stdout, "%s => %ld ", n->k, n->cw);
                 n = n->next;
             }
             fprintf(stdout, "\n");
@@ -216,17 +222,11 @@ void dictionary_print(Dictionary d){
 // create a node, initialize with NULL next pointer
 Node node_create(const Key k, const CodeWord cw, Node next){
     Node n = (Node) malloc (sizeof(struct _Node));
-    if (n == NULL){
-        fprintf(stderr, "Memory error: malloc, node\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(n != NULL);
 
     // allocate memory
     n->k = (char*)malloc((strlen(k)+1)*sizeof(char)); // add 1 for \0
-    if (n->k == NULL){
-        fprintf(stderr, "Memory error: node copy key\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(n->k != NULL);
     // copy the key
     strcpy(n->k, k);
 
@@ -259,10 +259,7 @@ Node node_delete(Node n){
 Array array_create(void){
 
     Array a = (struct _Array*) malloc (sizeof(struct _Array));
-    if (a == NULL){
-        fprintf(stderr, "Memory error: array create\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(a != NULL);
 
     // occupy the first 258+2 positions, but do not set anything
     // so that the whole ram usage can be smaller
@@ -271,10 +268,7 @@ Array array_create(void){
     // here we only need 4096 items
     // since here we do not perform hash, so no hash collision
     a->nodes = (char**) malloc (SIZE_LIMIT * sizeof(char*));
-    if (a->nodes == NULL){
-        fprintf(stderr, "Memory error: array create nodes\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(a->nodes != NULL);
 
     for (Index i = 0; i < SIZE_LIMIT; i++){
         a->nodes[i] = NULL;
@@ -287,8 +281,6 @@ Array array_create(void){
 // clean the array
 Array array_destroy(Array a){
     assert(a != NULL);
-
-    // array_print(a);
 
     for (Index i = 0; i < SIZE_LIMIT; i++){
         if (a->nodes[i] != NULL){
@@ -309,11 +301,7 @@ Array array_reset(Array a){
     assert(a != NULL);
 
     a = array_destroy(a);
-    assert(a == NULL);
-    
     a = array_create();
-    assert(a != NULL);
-    
     return a;
 }
 
@@ -338,31 +326,27 @@ bool array_is_full(const Array a){
 Key array_search(Array a, const Index idx){
     assert(a != NULL && idx >= 0);
 
+    Key result;
+
     // if the index <= 255, create the key and return
     // since the bucket is actually NULL
     if (idx <= 255){
-        Key ch = (Key) malloc (2 * sizeof(char));
-        if (ch == NULL){
-            fprintf(stderr, "Memory error: array search\n");
-            exit(EXIT_FAILURE);
-        }
-        ch[0] = idx;
-        ch[1] = '\0';
-        return ch;
+        result = (Key) malloc (2 * sizeof(char));
+        assert(result != NULL);
+
+        result[0] = idx;
+        result[1] = '\0';
     }
     else{
         assert(a->nodes[idx] != NULL);
 
         // malloc and then strcmp
-        Key result = (char*)malloc((strlen(a->nodes[idx])+1)*sizeof(char));
-        if (result == NULL){
-            fprintf(stderr, "Memory error: array search\n");
-            exit(EXIT_FAILURE);
-        }
-
+        result = (char*)malloc((strlen(a->nodes[idx])+1)*sizeof(char));
+        assert(result != NULL);
         strcpy(result, a->nodes[idx]);
-        return result;
     }
+
+    return result;
 }
 
 
@@ -372,10 +356,7 @@ Index array_insert(Array a, const Key k){
     assert(! array_is_full(a));
 
     a->nodes[a->current_num] = (char*) malloc ((strlen(k)+1)*sizeof(char));
-    if (a->nodes[a->current_num] == NULL){
-        fprintf(stderr, "Memory error: array insert\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(a->nodes[a->current_num] != NULL);
 
     strcpy(a->nodes[a->current_num], k);
     a->current_num += 1;    // update the counter
@@ -386,8 +367,7 @@ Index array_insert(Array a, const Key k){
 // check if the index is in the array or not
 // i.e. the array has corresponding codeword or not
 bool array_has_this_codeword(Array a, const Index idx){
-    assert(a != NULL);
-    assert(idx >= 0);
+    assert(a != NULL && idx >= 0);
     
     if (idx < 256){
         return true;
@@ -403,14 +383,14 @@ void array_print(const Array a){
     assert(a != NULL);
 
     fprintf(stdout, "-----Array print-----\n");
-    fprintf(stdout, "Size = %d, current_num = %d\n", SIZE_LIMIT, a->current_num);
+    fprintf(stdout, "Size = %d, current_num = %ld\n", SIZE_LIMIT, a->current_num);
 
     for (Index i = 0; i < SIZE_LIMIT; i++){
         if (i <= 255){
-            fprintf(stdout, "%d => %c\n", i, (char) i);
+            fprintf(stdout, "%ld => %c\n", i, (int) i);
         }
         else if (a->nodes[i] != NULL){
-            fprintf(stdout, "%d => %s\n", i, a->nodes[i]);
+            fprintf(stdout, "%ld => %s\n", i, a->nodes[i]);
         }
     }
 

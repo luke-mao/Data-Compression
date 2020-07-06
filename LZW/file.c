@@ -2,28 +2,21 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
-
 #include "file.h"
+
 
 // open the file, exit if error during opening
 FILE* open_file_for_read(const char* file_name){
     FILE* fp = fopen(file_name, "rb");
-    if (fp == NULL){
-        fprintf(stderr, "Error opening file \"%s\"\n", file_name);
-        exit(EXIT_FAILURE);
-    }
-
+    assert(fp != NULL);
     return fp;
 }
 
 
+// open the file for writing
 FILE* open_file_for_write(const char* file_name){
     FILE* fp = fopen(file_name, "wb");
-    if (fp == NULL){
-        fprintf(stderr, "Error opening file \"%s\"\n", file_name);
-        exit(EXIT_FAILURE);
-    }
-
+    assert(fp != NULL);
     return fp;
 }
 

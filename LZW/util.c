@@ -2,31 +2,30 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 
 // concat prev + char(c)
 // malloc and return a new pointer
 char* string_concat(const char* prev, const int c){
-    // concat s1 followed by s2
+    // concat prev followed by the new char
     // return a new pointer, so the inputs are not changed
     char* result;
     if (prev == NULL){
+        // create space for the single char
         result = (char*)malloc(2*sizeof(char));
-        if (result == NULL){
-            fprintf(stderr, "Memory error: string_concat\n");
-            exit(EXIT_FAILURE);
-        }
+        assert(result != NULL);
 
+        // create the string
         result[0] = c;
         result[1] = '\0';
     }
     else{
+        // concat the two things
         result = (char*)malloc((strlen(prev)+1+1)*sizeof(char));
-        if (result == NULL){
-            fprintf(stderr, "Memory error: string_concat\n");
-            exit(EXIT_FAILURE);
-        }
+        assert(result != NULL);
 
+        // copy the first part, and then the char
         strcpy(result, prev);
         result[strlen(prev)] = c;
         result[strlen(prev)+1] = '\0';
