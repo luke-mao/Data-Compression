@@ -5,7 +5,7 @@
 #include "tree.h"
 
 void TreeShowFunction(Node root);
-void TreeUpdateFunction(Node root, Node n);
+void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n);
 Node FindNodeNumberMaxInBlock(Node root, int occ);
 
 
@@ -44,7 +44,11 @@ Node NodeDestroy(Node n){
 Tree TreeCreate(void){
     Tree tr = (Tree) malloc(sizeof(struct _Tree));
     assert(tr != NULL);
+    
+    // create the root node, and initially this node is also the NYT
     tr->root = NodeCreate(ROOT_C, LABEL_START, 0, NULL, NULL, NULL);
+    tr->NYT = tr->root;
+
     return tr;
 }
 
@@ -62,13 +66,8 @@ Tree TreeDestroy(Tree tr){
 void TreeShow(Tree tr){
     assert(tr != NULL);
     
-    if (tr->root = NULL){
-        fprintf(stdout, "Tree is empty\n");
-        exit(EXIT_FAILURE);
-    }
-    else{
-        TreeShowFunction(tr->root);
-    }
+    TreeShowFunction(tr->root);
+    fprintf(stdout, "\n");
 
     return;
 }
@@ -85,7 +84,10 @@ void TreeShowFunction(Node n){
             fprintf(stdout, "(Root,%d,%d) ", n->label, n->occ);
         }
         else if (n->c == INTERNAL_NODE_C){
-            fprintf(stdout, "Internal,%d,%d) ", n->label, n->occ);
+            fprintf(stdout, "(Internal,%d,%d) ", n->label, n->occ);
+        }
+        else if(n->c == NYT_C){
+            fprintf(stdout, "(NYT,%d,%d) ", n->label, n->occ);
         }
         else{
             fprintf(stdout, "(%c,%d,%d) ", n->c, n->label, n->occ);
@@ -99,100 +101,152 @@ void TreeShowFunction(Node n){
 }
 
 
-void TreeUpdate(Tree tr, NodeList ndlist, Node NYT, int c){
+void TreeUpdate(Tree tr, NodeList ndlist, int c){
     assert(tr != NULL);
     assert(ndlist != NULL);
 
     // first determine if the list contain the node or not
     Node n = NodeListFindNode(ndlist, c);
     if (n != NULL){
+        fprintf(stdout, "TreeUpdate: %c %d not null\n", c, c);
+        fprintf(stdout, "TreeUpdate: check the return node n: %c %d, %d, %d\n", n->c, n->c, n->label, n->occ);
+
         // node has been created before
-        TreeUpdateFunction(tr->root, n);
+        TreeUpdateFunction(tr, ndlist, n);
     }
     else{
+        fprintf(stdout, "TreeUpdate: %c %d is null\n", c, c);
+        
+        
         // n is empty, create the node first
         // n->label = current NYT label - 1
         // n->parent = current NYT
-        n = NodeCreate(c, NYT->label-1, 1, NULL, NULL, NYT);
+        n = NodeCreate(c, tr->NYT->label-1, 1, NULL, NULL, tr->NYT);
         NodeListAddNode(ndlist, n);
 
-        Node newNYT = NodeCreate(NYT_C, NYT->label-2, 0, NULL, NULL, NYT);
+        Node newNYT = NodeCreate(NYT_C, tr->NYT->label-2, 0, NULL, NULL, tr->NYT);
 
         // rearrange the oldNYT connection parts
-        NYT->left = newNYT;
-        NYT->right = n;
-        NYT->occ += 1;
+        tr->NYT->left = newNYT;
+        tr->NYT->right = n;
+        tr->NYT->occ += 1;
 
-        // loop to update the tree using sibling property
-        // update from lowest level to the root level
-        TreeUpdateFunction(tr->root, NYT);        
+        // so right now, the separation of old NYT to two new nodes have been finished
+        // also the old NYT weight has been increased
+        // reassign the NYT
+        tr->NYT = newNYT;
 
-        // finally, re-assign the NYT
-        NYT = newNYT;
+        // check if it is the root node
+        // if the old NYT is the root node, do nothing, do not need to update tree any further
+        if(tr->NYT->parent->c != ROOT_C){
+            tr->NYT->parent->c = INTERNAL_NODE_C;
+            // go to its parent node for further update
+            TreeUpdateFunction(tr, ndlist, tr->NYT->parent->parent); 
+        }
     }
-
 
     return;
 }
 
 
-void TreeUpdateFunction(Node root, Node n){
-    assert(n != NULL);
+void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n){
+    assert(tr != NULL && ndlist != NULL && n != NULL);
     Node target;
-    
-    Node tmp_left, tmp_right, tmp_parent;
-    int tmp_c, tmp_label, tmp_occ;
 
     while (n->c != ROOT_C){
+        // debug
+        fprintf(stdout, "Now the tree is: ");
+        TreeShow(tr);
+        
+
         // check if its node number is max in the block
         // traversal the whole tree
-        target = FindNodeNumberMaxInBlock(root, n->occ);    
-        // check if the target is current n's parent
+        target = FindNodeNumberMaxInBlock(tr->root, n->occ);    
+
+        // there are 3 possible results: 
+        //  1. target = n->parent, 2. target is null, 3. target is purely different
+        
         // if yes, ignore, if not do the swap
-        if (target == n->parent){
+        if (target == n->parent || target == NULL){
+
+            if(target == n->parent){
+                fprintf(stdout, "Findmax return n->parent\n");
+            }
+            else{
+                fprintf(stdout, "Findmax return nothing\n");
+            }
+
+
             // increase weight
             n->occ += 1;
             // move to its parent level
             n = n->parent;
-            continue;
         }
+        else{
+            // swap: three scenario
+            //      swap internal node with internal
+            //      swap internal with leaf
+            //      swap leaf with leaf
 
-        // swap: three scenario
-        //      swap internal node with internal
-        //      swap internal with leaf
-        //      swap leaf with leaf
-        // first create an exact copy of the target
-        tmp_left = target->left;
-        tmp_right = target->right;
-        tmp_parent = target->parent;
-        tmp_c = target->c;
-        tmp_label = target->label;
-        tmp_occ = target->occ;
+            // so we need to notice that
+            // if simply break and re-construct from bottom up, is not enough
+            // also need to reconstrct from top to down
+            Node n_old_parent = n->parent;
+            Node target_old_parent = target->parent;
 
-        // move node n to target, keep the label unchanged
-        target->c = n->c;
-        target->occ = n->occ;
-        target->left = n->left;
-        target->right = n->right;
-        target->parent = n->parent;
+            // first break from top to down
+            // use the label to identify left or right
+            // left child label = parent label - 2
+            // right child label = parent label - 1
+            if(n->label == n_old_parent->label - 1){
+                // n is the right child
+                n_old_parent->right = target;
+            }
+            else{
+                // n is the left child
+                n_old_parent->left = target;
+            }
 
-        // move tmp to n, keep the label unchanged
-        n->c = tmp_c;
-        n->occ = tmp_occ;
-        n->left = tmp_left;
-        n->right = tmp_right;
-        n->parent = tmp_parent;
+            // same as the target side
+            if(target->label == target_old_parent->label - 1){
+                target_old_parent->right = n;
+            }
+            else{
+                target_old_parent->left = n;
+            }
 
-        // now reassign
-        n = target;
-        // increase weight
-        n->occ += 1;
-        // move to parent
-        n = n->parent;
+            // the above are top-down approach, now finish the bottom up
+            n->parent = target_old_parent;
+            target->parent = n_old_parent;
+
+            // finally, swap the label
+            int tmp_label;
+            tmp_label = n->label;
+            n->label = target->label;
+            target->label = tmp_label;
+
+
+            // and remember to update the node list
+            if (n->c >= 0){
+                ndlist[n->c] = n;
+            }
+
+            if (target->c >= 0){
+                ndlist[target->c] = target;
+            }
+
+
+
+
+            // at last, increase the occ of n, and move to its parent
+            n->occ += 1;
+            n = n->parent;
+        }
     }
 
-    // for root node, simply increase occ
+    // for the root node, only need to update the counter
     n->occ += 1;
+
     return;
 }
 
@@ -200,31 +254,47 @@ void TreeUpdateFunction(Node root, Node n){
 Node FindNodeNumberMaxInBlock(Node root, int occ){
     Node result = NULL;
 
-    if (root->occ == occ){
-        // does not need to go deeper
-        // since child's node number definitely smaller than root node number
-        result = root;
-    }
-    else if (root->occ < occ){
-        result = NULL;
-    }
-    else{
-        // now root->occ > occ
-        // go deeper
-        Node left_max = FindNodeNumberMaxInBlock(root->left, occ);
-        Node right_max = FindNodeNumberMaxInBlock(root->right, occ);
-
-        // for the same occ, return the max label node
-        // the label number must be different
-        if (left_max->label > right_max->label){
-            result = left_max;
+    // use the idea that: occ decreases when going deeper, same as the label
+    if (root != NULL){
+        if (root->occ == occ){
+            // does not need to go deeper
+            // since child's node number definitely smaller than root node number
+            result = root;
         }
-        else if (left_max->label < right_max->label){
-            result = right_max;
+        else if (root->occ < occ){
+            result = NULL;
         }
         else{
-            fprintf(stderr, "label number same error\n");
-            exit(EXIT_FAILURE);
+            // now root->occ > occ
+            // go deeper
+            Node left_max = FindNodeNumberMaxInBlock(root->left, occ);
+            Node right_max = FindNodeNumberMaxInBlock(root->right, occ);
+
+            // if one solution is null or both is null
+            if(left_max == NULL && right_max == NULL){
+                result = NULL;
+            }
+            else if (left_max == NULL){
+                result = right_max;
+            }
+            else if (right_max == NULL){
+                result = left_max;
+            }
+            else{
+                // both are not null
+                // for the same occ, return the max label node
+                // the label number must be different
+                if (left_max->label > right_max->label){
+                    result = left_max;
+                }
+                else if (left_max->label < right_max->label){
+                    result = right_max;
+                }
+                else{
+                    fprintf(stderr, "label number same error\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
         }
     }
 

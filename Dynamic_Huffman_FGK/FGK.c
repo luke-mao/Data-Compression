@@ -38,19 +38,22 @@ void FGK_compress(const char* filename){
 
     // prepare the tree
     Tree tr = TreeCreate();
-    Node NYT = 
+    NodeList ndlist = NodeListCreate();
+
+    fprintf(stdout, "Initially: ");
+    TreeShow(tr);
 
     int c;
     while ((c = getc(fp)) != EOF){
-        TreeUpdate
+        fprintf(stdout, "insert %c %d: \n", c, c);
+        TreeUpdate(tr, ndlist, c);
 
-
-
+        // debug use
+        TreeShow(tr);
+        printf("\n");
     }
 
-
-
-
+    return;
 }
 
 

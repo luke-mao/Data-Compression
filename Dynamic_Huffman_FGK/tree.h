@@ -3,9 +3,14 @@
 #include <stdbool.h>
 #include <assert.h>
 
+// so the leaf node has char c >= 0
+// and internal node, as well as root and NYT, has char c < 0
 #define ROOT_C -1
 #define INTERNAL_NODE_C -2
 #define NYT_C -3
+
+// label decreases from 256
+// use the ASCII table, 0-255, total 256
 #define LABEL_START 256
 #define ALPHABET_SIZE 256
 
@@ -34,16 +39,15 @@ struct _Tree{
 };
 
 typedef struct _Tree *Tree;
+typedef Node* NodeList;
 
 
 Tree TreeCreate(void);      // also have prepared the root node
 Tree TreeDestroy(Tree);
 void TreeShow(Tree);
-void TreeUpdate(Tree, NodeList, Node NYT, int);
+void TreeUpdate(Tree, NodeList, int);
 
 ///////////////////////////////////////////
-
-typedef Node* NodeList;
 
 NodeList NodeListCreate(void);
 NodeList NodeListDestroy(NodeList);
