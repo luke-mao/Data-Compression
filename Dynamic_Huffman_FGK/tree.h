@@ -29,6 +29,7 @@ typedef struct _Node *Node;
 
 Node NodeCreate(int c, int label, int occ, Node left, Node right, Node parent);
 Node NodeDestroy(Node);
+void NodePrintCode(Node);
 
 ////////////////////////////////////////////
 

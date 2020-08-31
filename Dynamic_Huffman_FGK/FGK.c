@@ -44,11 +44,14 @@ void FGK_compress(const char* filename){
     TreeShow(tr);
 
     int c;
+    int i = 0;
     while ((c = getc(fp)) != EOF){
-        fprintf(stdout, "insert %c %d: \n", c, c);
+        i += 1;
+        fprintf(stdout, "Number (%d): insert %c %d: \n", i, c, c);
         TreeUpdate(tr, ndlist, c);
 
         // debug use
+        fprintf(stdout, "Final tree is: ");
         TreeShow(tr);
         printf("\n");
     }

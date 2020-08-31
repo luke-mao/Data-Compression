@@ -1,0 +1,48 @@
+Initially: (Root,256,0) 
+Number (1): insert a 97: 
+TreeUpdate: a 97 is null
+Code:   + code for a 97
+Final tree is: (NYT,254,0) (Root,256,1) (a,255,1) 
+
+Number (2): insert b 98: 
+TreeUpdate: b 98 is null
+Code: 0  + code for b 98
+Final tree is: (NYT,252,0) (Internal,254,1) (b,253,1) (Root,256,2) (a,255,1) 
+
+Number (3): insert b 98: 
+TreeUpdate: b 98 not null
+TreeUpdate: check the return node n: b 98, 253, 1
+Code: 01
+Now the tree is: (NYT,252,0) (Internal,254,1) (b,253,1) (Root,256,2) (a,255,1) 
+Final tree is: (NYT,252,0) (Internal,254,1) (a,253,1) (Root,256,3) (b,255,2) 
+
+Number (4): insert b 98: 
+TreeUpdate: b 98 not null
+TreeUpdate: check the return node n: b 98, 255, 2
+Code: 1
+Now the tree is: (NYT,252,0) (Internal,254,1) (a,253,1) (Root,256,3) (b,255,2) 
+Final tree is: (NYT,252,0) (Internal,254,1) (a,253,1) (Root,256,4) (b,255,3) 
+
+Number (5): insert b 98: 
+TreeUpdate: b 98 not null
+TreeUpdate: check the return node n: b 98, 255, 3
+Code: 1
+Now the tree is: (NYT,252,0) (Internal,254,1) (a,253,1) (Root,256,4) (b,255,3) 
+Final tree is: (NYT,252,0) (Internal,254,1) (a,253,1) (Root,256,5) (b,255,4) 
+
+Number (6): insert b 98: 
+TreeUpdate: b 98 not null
+TreeUpdate: check the return node n: b 98, 255, 4
+Code: 1
+Now the tree is: (NYT,252,0) (Internal,254,1) (a,253,1) (Root,256,5) (b,255,4) 
+Final tree is: (NYT,252,0) (Internal,254,1) (a,253,1) (Root,256,6) (b,255,5) 
+
+Number (7): insert a 97: 
+TreeUpdate: a 97 not null
+TreeUpdate: check the return node n: a 97, 253, 1
+Code: 01
+Now the tree is: (NYT,252,0) (Internal,254,1) (a,253,1) (Root,256,6) (b,255,5) 
+Findmax return n->parent
+Now the tree is: (NYT,252,0) (Internal,254,1) (a,253,2) (Root,256,6) (b,255,5) 
+Final tree is: (NYT,252,0) (Internal,254,2) (a,253,2) (Root,256,7) (b,255,5) 
+

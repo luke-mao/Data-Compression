@@ -41,6 +41,30 @@ Node NodeDestroy(Node n){
 }
 
 
+// recursion, upward trace until reach root
+void NodePrintCode(Node n){
+    assert(n != NULL);
+
+    // stop when reach the root
+    if (n->c != ROOT_C){
+        // if not root node yet, continue upwards
+        NodePrintCode(n->parent);
+        
+        // check left or right child
+        if (n == n->parent->left){
+            fprintf(stdout, "0");
+        }
+        else{
+            fprintf(stdout, "1");
+        }
+        
+    }
+
+    return;
+}
+
+
+
 Tree TreeCreate(void){
     Tree tr = (Tree) malloc(sizeof(struct _Tree));
     assert(tr != NULL);
@@ -110,13 +134,18 @@ void TreeUpdate(Tree tr, NodeList ndlist, int c){
     if (n != NULL){
         fprintf(stdout, "TreeUpdate: %c %d not null\n", c, c);
         fprintf(stdout, "TreeUpdate: check the return node n: %c %d, %d, %d\n", n->c, n->c, n->label, n->occ);
+        fprintf(stdout, "Code: ");
+        NodePrintCode(n);
+        fprintf(stdout, "\n");
 
         // node has been created before
         TreeUpdateFunction(tr, ndlist, n);
     }
     else{
         fprintf(stdout, "TreeUpdate: %c %d is null\n", c, c);
-        
+        fprintf(stdout, "Code: ");
+        NodePrintCode(tr->NYT);
+        fprintf(stdout, "  + code for %c %d\n", c, c);
         
         // n is empty, create the node first
         // n->label = current NYT label - 1
@@ -195,10 +224,8 @@ void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n){
             Node target_old_parent = target->parent;
 
             // first break from top to down
-            // use the label to identify left or right
-            // left child label = parent label - 2
-            // right child label = parent label - 1
-            if(n->label == n_old_parent->label - 1){
+            // the label may be not continuous, so need to use pointer comparison
+            if(n == n_old_parent->right){
                 // n is the right child
                 n_old_parent->right = target;
             }
@@ -208,7 +235,7 @@ void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n){
             }
 
             // same as the target side
-            if(target->label == target_old_parent->label - 1){
+            if(target == target_old_parent->right){
                 target_old_parent->right = n;
             }
             else{
@@ -234,9 +261,6 @@ void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n){
             if (target->c >= 0){
                 ndlist[target->c] = target;
             }
-
-
-
 
             // at last, increase the occ of n, and move to its parent
             n->occ += 1;

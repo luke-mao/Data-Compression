@@ -1,0 +1,57 @@
+Initially: (Root,256,0) 
+Number (1): insert a 97: 
+TreeUpdate: a 97 is null
+Code:   + code for a 97
+Final tree is: (NYT,254,0) (Root,256,1) (a,255,1) 
+
+Number (2): insert a 97: 
+TreeUpdate: a 97 not null
+TreeUpdate: check the return node n: a 97, 255, 1
+Code: 1
+Now the tree is: (NYT,254,0) (Root,256,1) (a,255,1) 
+Findmax return n->parent
+Final tree is: (NYT,254,0) (Root,256,2) (a,255,2) 
+
+Number (3): insert   32: 
+TreeUpdate:   32 is null
+Code: 0  + code for   32
+Final tree is: (NYT,252,0) (Internal,254,1) ( ,253,1) (Root,256,3) (a,255,2) 
+
+Number (4): insert b 98: 
+TreeUpdate: b 98 is null
+Code: 00  + code for b 98
+Now the tree is: (NYT,250,0) (Internal,252,1) (b,251,1) (Internal,254,1) ( ,253,1) (Root,256,3) (a,255,2) 
+Final tree is: (NYT,250,0) (Internal,252,1) (b,251,1) (Internal,254,2) ( ,253,1) (Root,256,4) (a,255,2) 
+
+Number (5): insert b 98: 
+TreeUpdate: b 98 not null
+TreeUpdate: check the return node n: b 98, 251, 1
+Code: 001
+Now the tree is: (NYT,250,0) (Internal,252,1) (b,251,1) (Internal,254,2) ( ,253,1) (Root,256,4) (a,255,2) 
+Now the tree is: (NYT,250,0) (Internal,252,1) ( ,251,1) (Internal,254,2) (b,253,2) (Root,256,4) (a,255,2) 
+Final tree is: (a,254,2) (Root,256,5) (NYT,250,0) (Internal,252,1) ( ,251,1) (Internal,255,3) (b,253,2) 
+
+Number (6): insert b 98: 
+TreeUpdate: b 98 not null
+TreeUpdate: check the return node n: b 98, 253, 2
+Code: 11
+Now the tree is: (a,254,2) (Root,256,5) (NYT,250,0) (Internal,252,1) ( ,251,1) (Internal,255,3) (b,253,2) 
+Final tree is: (b,254,3) (Root,256,6) (NYT,250,0) (Internal,252,1) ( ,251,1) (Internal,255,3) (a,253,2) 
+
+Number (7): insert   32: 
+TreeUpdate:   32 not null
+TreeUpdate: check the return node n:   32, 251, 1
+Code: 101
+Now the tree is: (b,254,3) (Root,256,6) (NYT,250,0) (Internal,252,1) ( ,251,1) (Internal,255,3) (a,253,2) 
+Findmax return n->parent
+Now the tree is: (b,254,3) (Root,256,6) (NYT,250,0) (Internal,252,1) ( ,251,2) (Internal,255,3) (a,253,2) 
+Now the tree is: (b,254,3) (Root,256,6) (NYT,250,0) (Internal,252,2) ( ,251,2) (Internal,255,3) (a,253,2) 
+Final tree is: (b,254,3) (Root,256,7) (NYT,250,0) (Internal,252,2) ( ,251,2) (Internal,255,4) (a,253,2) 
+
+Number (8): insert c 99: 
+TreeUpdate: c 99 is null
+Code: 100  + code for c 99
+Now the tree is: (b,254,3) (Root,256,7) (NYT,248,0) (Internal,250,1) (c,249,1) (Internal,252,2) ( ,251,2) (Internal,255,4) (a,253,2) 
+Now the tree is: (b,254,3) (Root,256,7) (a,252,2) (Internal,255,4) (NYT,248,0) (Internal,250,1) (c,249,1) (Internal,253,3) ( ,251,2) 
+Final tree is: (b,254,3) (Root,256,8) (a,252,2) (Internal,255,5) (NYT,248,0) (Internal,250,1) (c,249,1) (Internal,253,3) ( ,251,2) 
+

@@ -1,0 +1,50 @@
+Initially: (Root,256,0) 
+Number (1): insert A 65: 
+TreeUpdate: A 65 is null
+Code:   + code for A 65
+Final tree is: (NYT,254,0) (Root,256,1) (A,255,1) 
+
+Number (2): insert A 65: 
+TreeUpdate: A 65 not null
+TreeUpdate: check the return node n: A 65, 255, 1
+Code: 1
+Now the tree is: (NYT,254,0) (Root,256,1) (A,255,1) 
+Findmax return n->parent
+Final tree is: (NYT,254,0) (Root,256,2) (A,255,2) 
+
+Number (3): insert D 68: 
+TreeUpdate: D 68 is null
+Code: 0  + code for D 68
+Final tree is: (NYT,252,0) (Internal,254,1) (D,253,1) (Root,256,3) (A,255,2) 
+
+Number (4): insert C 67: 
+TreeUpdate: C 67 is null
+Code: 00  + code for C 67
+Now the tree is: (NYT,250,0) (Internal,252,1) (C,251,1) (Internal,254,1) (D,253,1) (Root,256,3) (A,255,2) 
+Final tree is: (NYT,250,0) (Internal,252,1) (C,251,1) (Internal,254,2) (D,253,1) (Root,256,4) (A,255,2) 
+
+Number (5): insert C 67: 
+TreeUpdate: C 67 not null
+TreeUpdate: check the return node n: C 67, 251, 1
+Code: 001
+Now the tree is: (NYT,250,0) (Internal,252,1) (C,251,1) (Internal,254,2) (D,253,1) (Root,256,4) (A,255,2) 
+Now the tree is: (NYT,250,0) (Internal,252,1) (D,251,1) (Internal,254,2) (C,253,2) (Root,256,4) (A,255,2) 
+Final tree is: (A,254,2) (Root,256,5) (NYT,250,0) (Internal,252,1) (D,251,1) (Internal,255,3) (C,253,2) 
+
+Number (6): insert D 68: 
+TreeUpdate: D 68 not null
+TreeUpdate: check the return node n: D 68, 251, 1
+Code: 101
+Now the tree is: (A,254,2) (Root,256,5) (NYT,250,0) (Internal,252,1) (D,251,1) (Internal,255,3) (C,253,2) 
+Findmax return n->parent
+Now the tree is: (A,254,2) (Root,256,5) (NYT,250,0) (Internal,252,1) (D,251,2) (Internal,255,3) (C,253,2) 
+Now the tree is: (A,254,2) (Root,256,5) (NYT,250,0) (Internal,252,2) (D,251,2) (Internal,255,3) (C,253,2) 
+Final tree is: (A,254,2) (Root,256,6) (NYT,250,0) (Internal,252,2) (D,251,2) (Internal,255,4) (C,253,2) 
+
+Number (7): insert D 68: 
+TreeUpdate: D 68 not null
+TreeUpdate: check the return node n: D 68, 251, 2
+Code: 101
+Now the tree is: (A,254,2) (Root,256,6) (NYT,250,0) (Internal,252,2) (D,251,2) (Internal,255,4) (C,253,2) 
+Final tree is: (D,254,3) (Root,256,7) (NYT,250,0) (Internal,252,2) (A,251,2) (Internal,255,4) (C,253,2) 
+
