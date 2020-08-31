@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "tree.h"
+#include "FGK_functions.h"
 
 void TreeShowFunction(Node root);
 void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n);
@@ -42,7 +43,7 @@ Node NodeDestroy(Node n){
 
 
 // recursion, upward trace until reach root
-void NodePrintCode(Node n){
+void NodePrintCode(Node n, FILE* fp_out, char* out_c, int* out_c_num){
     assert(n != NULL);
 
     // stop when reach the root
@@ -52,10 +53,10 @@ void NodePrintCode(Node n){
         
         // check left or right child
         if (n == n->parent->left){
-            fprintf(stdout, "0");
+            print_to_file(fp_out, out_c, out_c_num, 0, 1);
         }
         else{
-            fprintf(stdout, "1");
+            print_to_file(fp_out, out_c, out_c_num, 1, 1);
         }
         
     }
@@ -125,28 +126,22 @@ void TreeShowFunction(Node n){
 }
 
 
-void TreeUpdate(Tree tr, NodeList ndlist, int c){
+void TreeUpdate(Tree tr, NodeList ndlist, int c, FILE* fp_out, char *out_c, int* out_c_num){
     assert(tr != NULL);
     assert(ndlist != NULL);
 
     // first determine if the list contain the node or not
     Node n = NodeListFindNode(ndlist, c);
     if (n != NULL){
-        fprintf(stdout, "TreeUpdate: %c %d not null\n", c, c);
-        fprintf(stdout, "TreeUpdate: check the return node n: %c %d, %d, %d\n", n->c, n->c, n->label, n->occ);
-        fprintf(stdout, "Code: ");
-        NodePrintCode(n);
-        fprintf(stdout, "\n");
+        NodePrintCode(n, fp_out, out_c, out_c_num);
 
         // node has been created before
         TreeUpdateFunction(tr, ndlist, n);
     }
     else{
-        fprintf(stdout, "TreeUpdate: %c %d is null\n", c, c);
-        fprintf(stdout, "Code: ");
-        NodePrintCode(tr->NYT);
-        fprintf(stdout, "  + code for %c %d\n", c, c);
-        
+        NodePrintCode(tr->NYT, fp_out, out_c, out_c_num);
+        print_to_file(fp_out, out_c, out_c_num, c, 8);
+
         // n is empty, create the node first
         // n->label = current NYT label - 1
         // n->parent = current NYT
@@ -182,12 +177,7 @@ void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n){
     assert(tr != NULL && ndlist != NULL && n != NULL);
     Node target;
 
-    while (n->c != ROOT_C){
-        // debug
-        fprintf(stdout, "Now the tree is: ");
-        TreeShow(tr);
-        
-
+    while (n->c != ROOT_C){     
         // check if its node number is max in the block
         // traversal the whole tree
         target = FindNodeNumberMaxInBlock(tr->root, n->occ);    
@@ -197,15 +187,6 @@ void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n){
         
         // if yes, ignore, if not do the swap
         if (target == n->parent || target == NULL){
-
-            if(target == n->parent){
-                fprintf(stdout, "Findmax return n->parent\n");
-            }
-            else{
-                fprintf(stdout, "Findmax return nothing\n");
-            }
-
-
             // increase weight
             n->occ += 1;
             // move to its parent level

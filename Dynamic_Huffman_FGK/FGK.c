@@ -3,11 +3,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <string.h>
-#include "tree.h"
-
-
-void FGK_compress(const char* filename);
-void FGK_decompress(const char* filename);
+#include "FGK_functions.h"
 
 
 int main(int argc, const char** argv){
@@ -29,39 +25,4 @@ int main(int argc, const char** argv){
     }
 
     return 0;
-}
-
-
-void FGK_compress(const char* filename){
-    FILE* fp = fopen(filename, "rb");
-    assert(fp != NULL);
-
-    // prepare the tree
-    Tree tr = TreeCreate();
-    NodeList ndlist = NodeListCreate();
-
-    fprintf(stdout, "Initially: ");
-    TreeShow(tr);
-
-    int c;
-    int i = 0;
-    while ((c = getc(fp)) != EOF){
-        i += 1;
-        fprintf(stdout, "Number (%d): insert %c %d: \n", i, c, c);
-        TreeUpdate(tr, ndlist, c);
-
-        // debug use
-        fprintf(stdout, "Final tree is: ");
-        TreeShow(tr);
-        printf("\n");
-    }
-
-    return;
-}
-
-
-
-void FGK_decompress(const char* filename){
-    puts("not finish");
-    return;
 }

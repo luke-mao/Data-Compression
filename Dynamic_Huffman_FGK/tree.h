@@ -1,13 +1,23 @@
+// dynamic huffman FGK tree construction
+// Each time a char is inputed, the tree first print out something, and then updates
+
+
+#ifndef _TREE_H_
+#define _TREE_H_
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+
 
 // so the leaf node has char c >= 0
 // and internal node, as well as root and NYT, has char c < 0
 #define ROOT_C -1
 #define INTERNAL_NODE_C -2
 #define NYT_C -3
+
 
 // label decreases from 256
 // use the ASCII table, 0-255, total 256
@@ -29,7 +39,7 @@ typedef struct _Node *Node;
 
 Node NodeCreate(int c, int label, int occ, Node left, Node right, Node parent);
 Node NodeDestroy(Node);
-void NodePrintCode(Node);
+void NodePrintCode(Node n, FILE* fp_out, char* out_c, int* out_c_num);
 
 ////////////////////////////////////////////
 
@@ -46,7 +56,7 @@ typedef Node* NodeList;
 Tree TreeCreate(void);      // also have prepared the root node
 Tree TreeDestroy(Tree);
 void TreeShow(Tree);
-void TreeUpdate(Tree, NodeList, int);
+void TreeUpdate(Tree, NodeList, int c, FILE* fp_out, char *out_c, int* out_c_num);
 
 ///////////////////////////////////////////
 
@@ -54,3 +64,6 @@ NodeList NodeListCreate(void);
 NodeList NodeListDestroy(NodeList);
 void NodeListAddNode(NodeList, Node);
 Node NodeListFindNode(NodeList, int c);
+
+
+#endif 
