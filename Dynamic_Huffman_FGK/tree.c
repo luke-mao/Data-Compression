@@ -49,13 +49,15 @@ void NodePrintCode(Node n, FILE* fp_out, char* out_c, int* out_c_num){
     // stop when reach the root
     if (n->c != ROOT_C){
         // if not root node yet, continue upwards
-        NodePrintCode(n->parent);
+        NodePrintCode(n->parent, fp_out, out_c, out_c_num);
         
         // check left or right child
         if (n == n->parent->left){
+            // left = 0, only print 1 bit
             print_to_file(fp_out, out_c, out_c_num, 0, 1);
         }
         else{
+            // right = 1, only print 1 bit
             print_to_file(fp_out, out_c, out_c_num, 1, 1);
         }
         
@@ -133,13 +135,17 @@ void TreeUpdate(Tree tr, NodeList ndlist, int c, FILE* fp_out, char *out_c, int*
     // first determine if the list contain the node or not
     Node n = NodeListFindNode(ndlist, c);
     if (n != NULL){
+        // not first occurrence for this letter
         NodePrintCode(n, fp_out, out_c, out_c_num);
 
         // node has been created before
         TreeUpdateFunction(tr, ndlist, n);
     }
     else{
+        // first occurrence for this letter
+        // print the code for NYT
         NodePrintCode(tr->NYT, fp_out, out_c, out_c_num);
+        // and also print the new char, the new char has 8 bit
         print_to_file(fp_out, out_c, out_c_num, c, 8);
 
         // n is empty, create the node first

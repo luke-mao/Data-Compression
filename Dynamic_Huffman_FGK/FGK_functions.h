@@ -13,10 +13,6 @@
 #include <string.h>
 
 
-const int power_of_two[] = {1, 2, 4, 8, 16, 32, 64, 128};
-
-
-
 // compression, decompression
 void FGK_compress(const char* filename);
 void FGK_decompress(const char* filename);
