@@ -13,7 +13,7 @@
 #include <string.h>
 
 
-// compression, decompression
+// compression and decompression main functions
 void FGK_compress(const char* filename);
 void FGK_decompress(const char* filename);
 

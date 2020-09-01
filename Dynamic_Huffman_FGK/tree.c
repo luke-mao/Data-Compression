@@ -5,7 +5,12 @@
 #include "tree.h"
 #include "FGK_functions.h"
 
+
+// additional function to print the tree in inorder
 void TreeShowFunction(Node root);
+
+
+// among all nodes with the same occ, return the node pointer with the max label
 Node FindNodeNumberMaxInBlock(Node root, int occ);
 
 
@@ -64,7 +69,6 @@ void NodePrintCode(Node n, FILE* fp_out, char* out_c, int* out_c_num){
 
     return;
 }
-
 
 
 Tree TreeCreate(void){

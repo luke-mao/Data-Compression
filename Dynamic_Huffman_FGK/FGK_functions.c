@@ -8,11 +8,17 @@
 #include "FGK_functions.h"
 
 
+// a constant array, replace pow(2, xx) function 
+// so, power_of_two[2] = 2^2 = 4
 const int power_of_two[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
 
+
+// decompress file main function
+// read a char, update the tree and then output related chars. 
 void decompress_file(FILE* fp, FILE* fp_out, Tree tr);
 
 
+/*************************************************************/
 void FGK_compress(const char* filename){
     // first open the input file
     FILE* fp = fopen(filename, "rb");
@@ -89,7 +95,7 @@ void FGK_compress(const char* filename){
 }
 
 
-
+/*************************************************************/
 void FGK_decompress(const char* filename){
     // first check if the filename is valid
     // valid name has .FGK at the end
@@ -151,7 +157,7 @@ void FGK_decompress(const char* filename){
 }
 
 
-
+/*************************************************************/
 void print_to_file(FILE* fp_out, char* out_c, int* out_c_num, int new_c, int new_c_num){
 
     int transfer_bit_num = 0; 
@@ -202,6 +208,7 @@ void print_to_file(FILE* fp_out, char* out_c, int* out_c_num, int new_c, int new
 }
 
 
+/*************************************************************/
 void pad_last_bit(FILE* fp_out, char* out_c, int* out_c_num){
     // pad last bit and print out
     // and then move to the first byte of the FILE and redo the first byte
@@ -229,12 +236,10 @@ void pad_last_bit(FILE* fp_out, char* out_c, int* out_c_num){
 }
 
 
-
-
+/*************************************************************/
 void decompress_file(FILE* fp, FILE* fp_out, Tree tr){
     assert(fp != NULL && fp_out != NULL);
     assert(tr != NULL);
-
 
     // the first byte of file tells how many numbers are padded
     // example: 00000100 means 4 numbers are padded
@@ -258,6 +263,7 @@ void decompress_file(FILE* fp, FILE* fp_out, Tree tr){
     // since the old NYT is the root node, so just add 1
     tr->root->occ += 1;
 
+
     // read the next char
     buffer1 = getc(fp);
     int buffer1_num_not_read = 8;
@@ -269,7 +275,6 @@ void decompress_file(FILE* fp, FILE* fp_out, Tree tr){
 
     // node
     Node n = tr->root;
-
 
     while (buffer2 != EOF){
         // extract one bit
