@@ -6,7 +6,6 @@
 #include "FGK_functions.h"
 
 void TreeShowFunction(Node root);
-void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n);
 Node FindNodeNumberMaxInBlock(Node root, int occ);
 
 
@@ -180,7 +179,9 @@ void TreeUpdate(Tree tr, NodeList ndlist, int c, FILE* fp_out, char *out_c, int*
 
 
 void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n){
-    assert(tr != NULL && ndlist != NULL && n != NULL);
+    // tree and the node should not be null
+    // but nodelist can be null (when decompression)
+    assert(tr != NULL && n != NULL);
     Node target;
 
     while (n->c != ROOT_C){     
@@ -240,14 +241,17 @@ void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n){
             target->label = tmp_label;
 
 
-            // and remember to update the node list
-            if (n->c >= 0){
-                ndlist[n->c] = n;
+            // and remember to update the node list, for compression
+            if (ndlist != NULL){
+                if (n->c >= 0){
+                    ndlist[n->c] = n;
+                }
+
+                if (target->c >= 0){
+                    ndlist[target->c] = target;
+                }
             }
 
-            if (target->c >= 0){
-                ndlist[target->c] = target;
-            }
 
             // at last, increase the occ of n, and move to its parent
             n->occ += 1;

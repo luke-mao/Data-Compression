@@ -57,7 +57,7 @@ Tree TreeCreate(void);      // also have prepared the root node
 Tree TreeDestroy(Tree);
 void TreeShow(Tree);
 void TreeUpdate(Tree, NodeList, int c, FILE* fp_out, char *out_c, int* out_c_num);
-
+void TreeUpdateFunction(Tree tr, NodeList ndlist, Node n);
 ///////////////////////////////////////////
 
 NodeList NodeListCreate(void);
