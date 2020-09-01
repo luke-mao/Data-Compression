@@ -136,7 +136,6 @@ void TreeUpdate(Tree tr, NodeList ndlist, int c, FILE* fp_out, char *out_c, int*
     if (n != NULL){
         // not first occurrence for this letter
         NodePrintCode(n, fp_out, out_c, out_c_num);
-
         // node has been created before
         TreeUpdateFunction(tr, ndlist, n);
     }

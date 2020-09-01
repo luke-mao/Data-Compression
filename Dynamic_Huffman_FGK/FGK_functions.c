@@ -8,7 +8,7 @@
 #include "FGK_functions.h"
 
 
-const int power_of_two[] = {1, 2, 4, 8, 16, 32, 64, 128};
+const int power_of_two[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
 
 void decompress_file(FILE* fp, FILE* fp_out, Tree tr);
 
@@ -161,10 +161,12 @@ void print_to_file(FILE* fp_out, char* out_c, int* out_c_num, int new_c, int new
 
 
     while ((*out_c_num) + new_c_num >= 8){
+
         transfer_bit_num = 8 - *out_c_num;
         transfer_bit_buffer = power_of_two[transfer_bit_num] - 1;
         shift_num = new_c_num - transfer_bit_num;
         trasnfer_bit = (((transfer_bit_buffer << shift_num) & new_c) >> shift_num) & transfer_bit_buffer; 
+
 
         // put these onto out_c
         *out_c <<= transfer_bit_num;

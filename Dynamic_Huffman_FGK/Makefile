@@ -1,12 +1,12 @@
 CC=gcc
 CFLAGS=-Wall -g -c
 LIBS=tree.o FGK_functions.o
-BINS=a
+BINS=FGK
 
 all : $(LIBS) $(BINS)
 
-a					: FGK.c $(LIBS)
-						$(CC) -o a FGK.c $(LIBS)
+FGK					: FGK.c $(LIBS)
+						$(CC) -o FGK FGK.c $(LIBS)
 
 FGK_functions.o		: FGK_functions.c
 tree.o				: tree.c
