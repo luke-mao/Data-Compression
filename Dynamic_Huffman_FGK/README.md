@@ -17,6 +17,9 @@ FGK.c
 
 Usage of the code:
 ```
+// please put test files in the same folder level as the FGK programme
+// otherwise the filename will have some errors. 
+
 Usage: ./FGK <-compress|-decompress> <file>
 ```
 
