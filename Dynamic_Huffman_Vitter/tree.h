@@ -55,8 +55,12 @@ TreeNode TreeNodeDestroy(TreeNode);
 Tree TreeCreate(void);
 Tree TreeDestroy(Tree);
 
+// so the first update for tree is the following function
+// and the main update will be written in "list.c"
+// since the main update method "Slide and Increment" 
+// is purely based on the linked list
 void TreeUpdateForFirstChar(Tree tr, int c);
-void TreeUpdate(Tree tr, int c);
 
+void TreeShow(Tree);
 
 #endif 

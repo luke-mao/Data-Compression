@@ -4,6 +4,10 @@
 #include "tree.h"
 
 
+void TreeShowFunction(TreeNode);
+
+
+
 TreeNode TreeNodeCreate(int c, int occ, TreeNode* left, TreeNode* right, TreeNode* parent){
     TreeNode trn = (TreeNode) malloc(sizeof(struct _TreeNode));
     assert(trn != NULL);
@@ -55,11 +59,54 @@ Tree TreeDestroy(Tree tr){
 
 
 void TreeUpdateForFirstChar(Tree tr, int c){
+    assert(tr != NULL);
+    
     // this is the first char
     // split the root into NYT on the left and new node on the right
+    // the tree is created already
 
+    // first create a TreeNode for the new char
+    TreeNode newNode = TreeNodeCreate(c, 1, NULL, NULL, tr->root);
+    TreeNode newNYT = TreeNodeCreate(NYT_C, 0, NULL, NULL, tr->root);
+
+    tr->root->left = newNYT;
+    tr->root->right = newNode;
+
+    tr->root->occ += 1;
+    tr->NYT = newNYT;
+
+    return tr;
 }
 
 
-void TreeUpdate(Tree tr, int c);
+void TreeShow(Tree tr){
+    assert(tr != NULL);
+    TreeShowFunction(tr->root);
+    return;
+}
 
+
+void TreeShowFunction(TreeNode trn){
+    if (trn != NULL){
+        // in-order traversal
+        // show left first
+        TreeShowFunction(trn->left);
+
+        // show myself
+        if (trn->c >= 0){
+            printf("(%c-%d, %d) ", trn->c, trn->c, trn->occ);
+        }
+        else if (trn->c == ROOT_C){
+            printf("(Root, %d) ", trn->occ);
+        }
+        else{
+            // internal node
+            printf("(Internal, %d) ", trn->occ);
+        }
+
+        // show right
+        TreeShowFunction(trn->right);
+    }
+
+    return;
+}

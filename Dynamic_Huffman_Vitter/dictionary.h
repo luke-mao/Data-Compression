@@ -22,7 +22,7 @@ typedef ListNode* Dictionary;
 
 // functions
 Dictionary DictionaryCreate(int size);
-Dictionary DictionaryDestroy(Dictionary);
+Dictionary DictionaryDestroy(Dictionary, int size);
 ListNode DictionarySearch(Dictionary, int c);           // return either NULL, or the list node
 void DictionaryInsert(Dictionary, ListNode);        
 
