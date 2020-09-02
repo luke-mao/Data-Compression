@@ -16,8 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <assert.h>
+
 
 // so the leaf node has char c >= 0
 // and internal node, as well as root and NYT, has char c < 0
@@ -26,77 +25,38 @@
 #define NYT_C -3
 
 
-// label decreases from 256
-// use the ASCII table, 0-255, total 256
-#define LABEL_START 256
-#define ALPHABET_SIZE 256
-
-
-// a typical node structure for the dynamic huffman tree
-// as a binary tree, it has left and right child.
-// in order to trace upwards, it has a parent pointer.
-// in addition, the node should contain "label" and "occ" used in swap.
-// and also use integer to represent the char.
-// "int" data type for char, so we can use negative integer to represent 
-// the root and all internal nodes, as well as NYT
-struct _Node {
-    int label;
+// tree node
+// due to implicit numbering, we do not need to use "label" as in the FGK algorithm
+struct _TreeNode{
+    int c;
     int occ;
-    int c; 
-    struct _Node *left;
-    struct _Node *right;
-    struct _Node *parent;
+    struct _TreeNode *left;
+    struct _TreeNode *right;
+    struct _TreeNode *parent;
+};
+
+
+// define the tree
+struct _Tree{
+    TreeNode root;
+    TreeNode NYT;
 };
 
 
 // define the pointer
-typedef struct _Node *Node;
-
-
-// dynamic huffman FGK tree structure, store the root and current NYT node. 
-struct _Tree{
-    Node root;
-    Node NYT;
-};
-
-
+typedef struct _TreeNode *TreeNode;
 typedef struct _Tree *Tree;
-typedef Node* NodeList;
-
-// for each slide & increment process, need to traversal the tree to obtain a list of nodes 
-// with sam eocc, and same type (leaf block or internal node block, exclude the root node)
-struct _List{
-    Node* list;
-    int len;
-    int occ;
-    bool isleaf;
-};
-typedef struct _List List;
 
 
-Node NodeCreate(int c, int label, int occ, Node left, Node right, Node parent);
-Node NodeDestroy(Node);
-void NodePrintCode(Node n);
+// functions related to tree and tree node
+TreeNode TreeNodeCreate(int c, int occ, TreeNode* left, TreeNode* right, TreeNode* parent);
+TreeNode TreeNodeDestroy(TreeNode);
 
-
-Tree TreeCreate(void);      
+Tree TreeCreate(void);
 Tree TreeDestroy(Tree);
-void TreeShow(Tree);
-void TreeUpdate(Tree, NodeList, int c);
 
-
-NodeList NodeListCreate(void);
-NodeList NodeListDestroy(NodeList);
-void NodeListAddNode(NodeList, Node);
-Node NodeListFindNode(NodeList, int c);
-
-
-// functions for list
-List ListCreate(int occ, bool isleaf);
-List ListDestroy(List);
-void ListInsert(List, Node);
-void ListShow(List);
-bool ListIsEmpty(List);
+void TreeUpdateForFirstChar(Tree tr, int c);
+void TreeUpdate(Tree tr, int c);
 
 
 #endif 
