@@ -6,9 +6,8 @@
 */
 
 
-
-#ifndef _ARRAY_H_
-#define _ARRAY_H_
+#ifndef _DICTIONARY_H_
+#define _DICTIONARY_H_
 
 
 #include <stdio.h>
@@ -24,8 +23,8 @@ typedef ListNode* Dictionary;
 // functions
 Dictionary DictionaryCreate(int size);
 Dictionary DictionaryDestroy(Dictionary);
-ListNode DictionarySearch(int c);           // return either NULL, or the list node
-void DictionaryInsert(ListNode);        
+ListNode DictionarySearch(Dictionary, int c);           // return either NULL, or the list node
+void DictionaryInsert(Dictionary, ListNode);        
 
 
 #endif 

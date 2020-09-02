@@ -7,8 +7,8 @@
 */
 
 
-#ifndef _ARRAY_H_
-#define _ARRAY_H_
+#ifndef _LIST_H_
+#define _LIST_H_
 
 
 #include <stdio.h>
@@ -18,7 +18,7 @@
 
 // define the node structure
 struct _ListNode{
-    TreeNode n;
+    TreeNode trn;
     struct _ListNode *next;
 };
 
@@ -37,8 +37,10 @@ ListNode ListNodeDestroy(ListNode);     // recursion, delete this node and all n
 // List
 List ListCreate(void);
 List ListDestroy(List);
-void ListInsert(ListNode);              // insert listnode into list, similar to insertion sort
-void ListUpdate(List);                  // maybe need to separate into few paragraphs
+void ListInsert(List, ListNode);              // insert listnode into list, similar to insertion sort
+void ListShow(List);
+
+// write a function for slide and increment
 
 
 #endif
