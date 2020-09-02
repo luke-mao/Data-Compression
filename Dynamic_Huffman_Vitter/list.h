@@ -52,5 +52,7 @@ void ListInitialUpdate(List, Tree);
 // slide and increment: one step only
 void SlideAndIncrement(List, ListNode);
 
+// swap this node with the leader of the corresponding block
+void SwapWithLeader(List, ListNode);
 
 #endif

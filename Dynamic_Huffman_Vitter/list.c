@@ -106,7 +106,7 @@ void ListShow(List L){
     ListNode listn = L->next;
     while (listn != NULL){
         if (listn->trn->c >= 0){
-            printf("(%c-%d, ", listn->trn->c);
+            printf("(%c-%d, ", listn->trn->c, listn->trn->c);
         }
         else if(listn->trn->c == ROOT_C){
             printf("(Root, ");
@@ -182,8 +182,10 @@ void SlidAndIncrement(List L, ListNode p){
             // Node sequence: p->trn, start->trn, XX, XX, XX, final
             ListNode prev = p;
             ListNode curr = start;
-            ListNode curr_trn_old_parent;
+            TreeNode curr_trn_old_parent;
 
+
+            // This part needs to be reviewed!!!
             while (curr != final){
                 curr_trn_old_parent = curr->trn->parent;
 
@@ -308,3 +310,74 @@ void SlidAndIncrement(List L, ListNode p){
     return;
 }
 
+
+void SwapWithLeader(List L, ListNode L_n){
+    assert(L != NULL);
+    assert(L_n != NULL);
+
+    // Since this function is only called during the early stage
+    // of update the tree, L_n->trn must be a leaf node
+    // look for the leader of the leaf block, with same occ
+    ListNode L_n_leader = L_n->next;
+
+    while (L_n_leader->trn->occ == L_n->trn->occ && L_n_leader->trn->c >= 0){
+        L_n_leader = L_n_leader->next;
+    }
+
+    // move one position backwards
+    L_n_leader = L_n_leader->prev;
+
+    // if it is same as the input node, no need to swap
+    if (L_n_leader != L_n){
+        // do the swap on both the tree level and the linked list level
+        
+        // first do the swap on the tree level
+        TreeNode trn_leader_old_p = L_n_leader->trn->parent;
+        TreeNode trn_old_p = L_n->trn->parent;
+        
+        // from child to parent
+        L_n_leader->trn->parent = trn_old_p;
+        L_n->trn->parent = trn_leader_old_p;
+
+        // from parent to child for leader
+        if (trn_leader_old_p->left == L_n_leader->trn){
+            trn_leader_old_p->left = L_n->trn;
+        }
+        else{
+            trn_leader_old_p->right = L_n->trn;
+        }
+        
+        // from parent to child to the node
+        if (trn_old_p->left == L_n->trn){
+            trn_old_p->left = L_n_leader->trn;
+        }
+        else{
+            trn_old_p->right = L_n_leader->trn;
+        }
+
+        // now do the swap on the linked list level
+        // now the link should be:
+        // L_n->prev => L_n_leader => L_n->next => 
+        //          => xx => L_n_leader->prev => L_n => L_n_leader->next 
+        // Name the following vairables:
+        // first => L_n_leader => second => ... => third => L_n => fourth
+        ListNode first = L_n->prev;
+        ListNode second = L_n->next;
+        ListNode third = L_n_leader->prev;
+        ListNode fourth = L_n_leader->next;
+
+        // first do the forward link
+        first->next = L_n_leader;
+        L_n_leader->next = second;
+        third->next = L_n;
+        L_n->next = fourth;
+
+        // then do the backward link
+        fourth->prev = L_n;
+        L_n->prev = third;
+        second->prev = L_n_leader;
+        L_n_leader->prev = first;
+    }
+
+    return;
+}

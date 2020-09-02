@@ -48,10 +48,11 @@ ListNode DictionarySearch(Dictionary d, int c){
 }          
 
 
-void DictionaryInsert(Dictionary d, ListNode n){
+void DictionaryInsert(Dictionary d, ListNode listn){
     assert(d != NULL);
-    assert(n != NULL);
+    assert(listn != NULL);
+    assert(listn->trn->c >= 0);
 
-    d[n->n->c] = n;
-    return n;
+    d[listn->trn->c] = listn;
+    return;
 }        

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <assert.h>
 #include "tree.h"
 
 
@@ -8,7 +9,7 @@ void TreeShowFunction(TreeNode);
 
 
 
-TreeNode TreeNodeCreate(int c, int occ, TreeNode* left, TreeNode* right, TreeNode* parent){
+TreeNode TreeNodeCreate(int c, int occ, TreeNode left, TreeNode right, TreeNode parent){
     TreeNode trn = (TreeNode) malloc(sizeof(struct _TreeNode));
     assert(trn != NULL);
 
@@ -75,7 +76,7 @@ void TreeUpdateForFirstChar(Tree tr, int c){
     tr->root->occ += 1;
     tr->NYT = newNYT;
 
-    return tr;
+    return;
 }
 
 

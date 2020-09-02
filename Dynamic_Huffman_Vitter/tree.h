@@ -25,6 +25,10 @@
 #define NYT_C -3
 
 
+// ASCII table size = 256
+#define ASCII_SIZE 256
+
+
 // tree node
 // due to implicit numbering, we do not need to use "label" as in the FGK algorithm
 struct _TreeNode{
@@ -36,6 +40,10 @@ struct _TreeNode{
 };
 
 
+// define the pointer
+typedef struct _TreeNode *TreeNode;
+
+
 // define the tree
 struct _Tree{
     TreeNode root;
@@ -44,12 +52,11 @@ struct _Tree{
 
 
 // define the pointer
-typedef struct _TreeNode *TreeNode;
 typedef struct _Tree *Tree;
 
 
 // functions related to tree and tree node
-TreeNode TreeNodeCreate(int c, int occ, TreeNode* left, TreeNode* right, TreeNode* parent);
+TreeNode TreeNodeCreate(int c, int occ, TreeNode left, TreeNode right, TreeNode parent);
 TreeNode TreeNodeDestroy(TreeNode);
 
 Tree TreeCreate(void);
