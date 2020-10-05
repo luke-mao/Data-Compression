@@ -97,3 +97,39 @@ void TreeShowFunction(TreeNode trn){
 
     return;
 }
+
+bool IsRightChild(TreeNode child, TreeNode parent){
+    assert(child != NULL && parent != NULL);
+    assert(child->parent == parent);
+
+    if (parent->right == child){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+
+bool IsRootNode(TreeNode trn){
+    assert(trn != NULL);
+    return trn->c == ROOT_C;
+}
+
+
+bool IsInternalNode(TreeNode trn){
+    assert(trn != NULL);
+    return trn->c == INTERNAL_NODE_C;
+}
+
+
+bool IsLeafNode(TreeNode trn){
+    assert(trn != NULL);
+    return trn->c >= 0;
+}
+
+
+bool IsNYTNode(TreeNode trn){
+    assert(trn != NULL);
+    return trn->c == NYT_C;
+}

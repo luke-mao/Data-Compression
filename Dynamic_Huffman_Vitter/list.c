@@ -36,6 +36,12 @@ ListNode ListNodeDestroy(ListNode listn){
 }
 
 
+TreeNode ListNodeGetTreeNode(ListNode LN){
+    assert(LN != NULL && LN->trn != NULL);
+    return LN->trn;
+}
+
+
 // create the list: dummy head
 List ListCreate(void){
     List L = (List) malloc(sizeof(struct _ListNode));
@@ -126,4 +132,19 @@ ListNode ListGetFromTreeNode(List L, TreeNode trn){
 
     assert(result != NULL);
     return result;
+}
+
+
+ListNode FindParentListNode(ListNode LN){
+    assert(LN != NULL);
+
+    // simply go down LN->next, and compare the trn
+    ListNode current = LN->next;
+    while (current != NULL && current->trn != LN->trn->parent){
+        current = current->next;
+    }
+
+    // the return must not be null, otherwise error
+    assert(current != NULL);
+    return current;
 }

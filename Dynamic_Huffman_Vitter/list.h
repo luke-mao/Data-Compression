@@ -33,7 +33,7 @@ typedef struct _ListNode *List;
 // ListNode
 ListNode ListNodeCreate(TreeNode);      // just include the treenode, with a null next pointer
 ListNode ListNodeDestroy(ListNode);     // recursion, delete this node and all next nodes
-
+TreeNode ListNodeGetTreeNode(ListNode);
 
 // List
 List ListCreate(void);
@@ -41,6 +41,6 @@ List ListDestroy(List);
 void ListInsert(List, ListNode);              // insert listnode into list, similar to insertion sort
 void ListShow(List);
 ListNode ListGetFromTreeNode(List, TreeNode);
-
+ListNode FindParentListNode(ListNode LN);
 
 #endif

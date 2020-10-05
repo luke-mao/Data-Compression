@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 
 // so the leaf node has char c >= 0
@@ -61,6 +62,14 @@ TreeNode TreeNodeDestroy(TreeNode);
 
 Tree TreeCreate(void);
 Tree TreeDestroy(Tree);
+
+// determine if two tree nodes are right child or left child
+bool IsRightChild(TreeNode child, TreeNode parent);
+
+bool IsRootNode(TreeNode trn);
+bool IsInternalNode(TreeNode trn);
+bool IsLeafNode(TreeNode trn);
+bool IsNYTNode(TreeNode trn);
 
 void TreeShow(Tree);
 

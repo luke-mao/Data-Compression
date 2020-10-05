@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <string.h>
+#include "update.h"
 #include "compress.h"
 #include "decompress.h"
 
