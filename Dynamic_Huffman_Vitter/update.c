@@ -23,14 +23,15 @@ void TreeUpdateForFirstChar(Tree tr, int c){
 
     // first create a TreeNode for the new char
     // so here the new symbol node is assigned with occ = 1 directly
-    TreeNode newNode = TreeNodeCreate(c, 1, NULL, NULL, tr->root);
-    TreeNode newNYT = TreeNodeCreate(NYT_C, 0, NULL, NULL, tr->root);
+    TreeNode newNode = TreeNodeCreate(c, 1, NULL, NULL, GetRoot(tr));
+    TreeNode newNYT = TreeNodeCreate(NYT_C, 0, NULL, NULL, GetRoot(tr));
 
-    tr->root->left = newNYT;
-    tr->root->right = newNode;
+    ConnectAsLeftChild(newNYT, GetRoot(tr));
+    ConnectAsRightChild(newNode, GetRoot(tr));
 
-    tr->root->occ += 1;
-    tr->NYT = newNYT;
+    IncreaseOcc(GetRoot(tr));
+
+    UpdateNYT(tr, newNYT);
 
     return;
 }
@@ -40,31 +41,32 @@ void ListUpdateForFirstChar(List L, Tree tr){
     assert(L != NULL);
     assert(tr != NULL);
     // check root node
-    assert(tr->root != NULL);
+    assert(GetRoot(tr) != NULL);
     // check it has a left NYT and right child not null
-    assert(tr->root->right != NULL && tr->root->left == tr->NYT);
-    // check the right child is a leaf node
-    assert(tr->root->right->left == NULL && tr->root->right->right == NULL);
-    // check the right child char >= 0 and occ = 1
-    assert(tr->root->right->c >= 0 && tr->root->right->occ == 1);
+    assert(GetRight(GetRoot(tr)) != NULL && GetLeft(GetRoot(tr)) == GetNYT(tr));
+    // check the left child of root is a NYT node
+    assert(IsNYTNode(GetLeft(GetRoot(tr))));
+    // check the right child is a symbol node
+    assert(IsSymbolNode(GetRight(GetRoot(tr))));
 
 
     // create list node for: NYT, right child, and root
     // then link them together
-    ListNode LN_NYT = ListNodeCreate(tr->NYT);
-    ListNode LN_right = ListNodeCreate(tr->root->right);
-    ListNode LN_root = ListNodeCreate(tr->root);
+    ListNode LN_NYT = ListNodeCreate(GetNYT(tr));
+    ListNode LN_right = ListNodeCreate(GetRight(GetRoot(tr)));
+    ListNode LN_root = ListNodeCreate(GetRoot(tr));
 
     // assign the list node
-    L->next = LN_NYT;
+    // L->next = LN_NYT;
+    AssignListHead(L, LN_NYT);
 
     // forward link
-    LN_NYT->next = LN_right;
-    LN_right->next = LN_root;
+    ConnectAsNext(LN_NYT, LN_right);
+    ConnectAsNext(LN_right, LN_root);
 
     // backward link
-    LN_root->prev = LN_right;
-    LN_right->prev = LN_NYT;
+    ConnectAsPrev(LN_root, LN_right);
+    ConnectAsPrev(LN_right, LN_NYT);
 
     return;
 }
@@ -84,43 +86,43 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
     if (LN_p == NULL){
         // printf("new symbol\n");
 
-        LN_p = ListGetFromTreeNode(L, tr->NYT);
+        LN_p = GetListNodeFromTreeNode(L, GetNYT(tr));
 
-        FilePrintNodePath(buffer_p, buffer_len_p, fp, LN_p->trn);
+        FilePrintNodePath(buffer_p, buffer_len_p, fp, GetTreeNodeFromListNode(LN_p));
         
         FilePrintByte(buffer_p, buffer_len_p, fp, c);
     }
     else{
         // printf("existing symbol\n");
         // existing symbol, print the trace only
-        FilePrintNodePath(buffer_p, buffer_len_p, fp, LN_p->trn);
+        FilePrintNodePath(buffer_p, buffer_len_p, fp, GetTreeNodeFromListNode(LN_p));
     }
 
     // now the list node LN_c is either listnode NYT, or the listnode for the symbol
 
     ListNode LN_LeafToIncrement = NULL;
-    TreeNode trn_p = LN_p->trn;
+    TreeNode trn_p = GetTreeNodeFromListNode(LN_p);
 
 
     if (IsNYTNode(trn_p)){
         // change the current trn NYT to internal trn
-        trn_p->c = INTERNAL_NODE_C;
+        ResetToInternalNode(trn_p);
 
         // create two new trn: NYT and the new symbol
         TreeNode trn_NYT = TreeNodeCreate(NYT_C, 0, NULL, NULL, NULL);
         // update the NYT in the tree
-        tr->NYT = trn_NYT;
+        UpdateNYT(tr, trn_NYT);
 
         // create a node for this new symbol
         TreeNode trn_c = TreeNodeCreate(c, 0, NULL, NULL, NULL);
 
         // reconstruct that tree
         // top to down
-        trn_p->left = trn_NYT;
-        trn_p->right = trn_c;
+        ConnectAsLeftChild(trn_NYT, trn_p);
+        ConnectAsRightChild(trn_c, trn_p);
         // bottom to up
-        trn_NYT->parent = trn_p;
-        trn_c->parent = trn_p;
+        ConnectToParent(trn_NYT, trn_p);
+        ConnectToParent(trn_c, trn_p);
 
         // add to list
         ListNode LN_internal = LN_p;        // the NYT list node
@@ -134,13 +136,13 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
         DictionaryInsert(d, LN_c);
         
         // reconstruct the list, left to right
-        L->next = LN_NYT;
-        LN_NYT->next = LN_c;
-        LN_c->next = LN_internal;
+        AssignListHead(L, LN_NYT);
+        ConnectAsNext(LN_NYT, LN_c);
+        ConnectAsNext(LN_c, LN_internal);
 
         // right to left
-        LN_internal->prev = LN_c;
-        LN_c->prev = LN_NYT;
+        ConnectAsPrev(LN_internal, LN_c);
+        ConnectAsPrev(LN_c, LN_NYT);
 
         // p = parent of the symbol node, LN_p does not change
         // leaf to increment = the right child of trn_p
@@ -151,7 +153,7 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
         SwapWithLeader(L, LN_p);
         
         // if p is the sibling of the 0 node
-        if (IsNYTNode(trn_p->parent->left)){
+        if (IsNYTSubling(trn_p)){
             // leaf to increment = p, but assign with its outer structure list node
             LN_LeafToIncrement = LN_p;
 
@@ -166,12 +168,12 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
     // ListShow(L);
 
     // while p is not the root of the tree
-    while (! IsRootNode(LN_p->trn)){
+    while (! IsRootNode(ListNodeGetTreeNode(LN_p))){
         SlideAndIncrement(L, &LN_p);
     }
 
     // increase root weight
-    LN_p->trn->occ += 1;
+    IncreaseOcc(ListNodeGetTreeNode(LN_p));
 
     if (LN_LeafToIncrement != NULL){
         SlideAndIncrement(L, &LN_LeafToIncrement);

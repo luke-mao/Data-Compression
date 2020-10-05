@@ -63,14 +63,39 @@ TreeNode TreeNodeDestroy(TreeNode);
 Tree TreeCreate(void);
 Tree TreeDestroy(Tree);
 
-// determine if two tree nodes are right child or left child
+// determine if two tree nodes are right child or left child, right = true
 bool IsRightChild(TreeNode child, TreeNode parent);
 
+// determine the property
 bool IsRootNode(TreeNode trn);
 bool IsInternalNode(TreeNode trn);
 bool IsLeafNode(TreeNode trn);
 bool IsNYTNode(TreeNode trn);
+bool IsSymbolNode(TreeNode trn);
+bool IsNYTSubling(TreeNode trn);
 
+// increase occ
+void IncreaseOcc(TreeNode trn);
+int TreeNodeGetOcc(TreeNode trn);
+
+// connect
+void ConnectToParent(TreeNode child, TreeNode parent);
+void ConnectAsRightChild(TreeNode child, TreeNode parent);
+void ConnectAsLeftChild(TreeNode child, TreeNode parent);
+
+TreeNode GetRoot(Tree tr);
+TreeNode GetNYT(Tree tr);
+
+TreeNode GetRight(TreeNode trn);
+TreeNode GetLeft(TreeNode trn);
+TreeNode GetParent(TreeNode trn);
+
+void ResetToInternalNode(TreeNode trn);
+
+void UpdateNYT(Tree tr, TreeNode NYT);
+
+
+// for debug
 void TreeShow(Tree);
 
 #endif 

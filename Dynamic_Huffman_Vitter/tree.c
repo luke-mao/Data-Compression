@@ -111,6 +111,7 @@ bool IsRightChild(TreeNode child, TreeNode parent){
 }
 
 
+// just root tag there is fine
 bool IsRootNode(TreeNode trn){
     assert(trn != NULL);
     return trn->c == ROOT_C;
@@ -119,17 +120,113 @@ bool IsRootNode(TreeNode trn){
 
 bool IsInternalNode(TreeNode trn){
     assert(trn != NULL);
-    return trn->c == INTERNAL_NODE_C;
+    return trn->c == INTERNAL_NODE_C && (trn->left != NULL || trn->right != NULL);
 }
 
 
+// no child node is enough, cause NYT, root can also be leaf node
 bool IsLeafNode(TreeNode trn){
     assert(trn != NULL);
-    return trn->c >= 0;
+    return trn->left == NULL && trn->right == NULL;
 }
 
 
 bool IsNYTNode(TreeNode trn){
     assert(trn != NULL);
-    return trn->c == NYT_C;
+    return trn->c == NYT_C && trn->left == NULL && trn->right == NULL;
+}
+
+
+bool IsSymbolNode(TreeNode trn){
+    assert(trn != NULL);
+    return IsLeafNode(trn) && trn->c >= 0;
+}
+
+
+bool IsNYTSubling(TeeeNode trn){
+    assert(trn != NULL);
+    // must be the right child
+    assert(IsRightChild(trn, trn->parent));
+    return IsNYTNode(trn->parent->left);
+}
+
+void IncreaseOcc(TreeNode trn){
+    assert(trn != NULL);
+    assert(! IsNYTNode(trn));
+    
+    trn->occ += 1;
+    return;
+}
+
+
+int TreeNodeGetOcc(TreeNode trn){
+    assert(trn != NULL && trn->occ >= 0);
+    return trn->occ;
+}
+
+
+void ConnectAsParent(TreeNode child, TreeNode parent){
+    assert(child != NULL && parent != NULL);
+    child->parent = parent;
+    return;
+}
+
+
+void ConnectAsRightChild(TreeNode child, TreeNode parent){
+    assert(child != NULL && parent != NULL);
+    parent->right = child;
+    return;
+}
+
+
+void ConnectAsLeftChild(TreeNode child, TreeNode parent){
+    assert(child != NULL && parent != NULL);
+    parent->left = child;
+    return;
+}
+
+
+TreeNode GetRoot(Tree tr){
+    assert(tr != NULL);
+    return tr->root;
+}
+
+TreeNode GetNYT(Tree tr){
+    assert(tr != NULL);
+    return tr->NYT;
+}
+
+
+TreeNode GetRight(TreeNode trn){
+    assert(trn != NULL);
+    return trn->right;
+}
+
+
+TreeNode GetLeft(TreeNode trn){
+    assert(trn != NULL);
+    return trn->left;
+}
+
+
+TreeNode GetParent(TreeNode trn){
+    assert(trn != NULL);
+    return trn->parent;
+}
+
+
+void UpdateNYT(Tree tr, TreeNode NYT){
+    assert(tr != NULL && NYT != NULL);
+    assert(IsNYTNode(NYT));
+    
+    tr->NYT = NYT;
+    return;
+}
+
+
+void ResetToInternalNode(TreeNode trn){
+    assert(trn != NULL);
+    assert(! IsInternalNode(trn));
+    trn->c = INTERNAL_NODE_C;
+    return;
 }

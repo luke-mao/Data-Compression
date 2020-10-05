@@ -121,7 +121,13 @@ void ListShow(List L){
 }          
 
 
-ListNode ListGetFromTreeNode(List L, TreeNode trn){
+TreeNode GetTreeNodeFromListNode(ListNode L){
+    assert(L != NULL && L->trn != NULL);
+    return L->trn;
+}
+
+
+ListNode GetListNodeFromTreeNode(List L, TreeNode trn){
     assert(L != NULL && trn != NULL);
 
     // linear scan the list
@@ -147,4 +153,43 @@ ListNode FindParentListNode(ListNode LN){
     // the return must not be null, otherwise error
     assert(current != NULL);
     return current;
+}
+
+
+ListNode GetPrev(ListNode LN){
+    assert(LN != NULL);
+    return LN->prev;
+}
+
+
+ListNode GetNext(ListNode LN){
+    assert(LN != NULL);
+    return LN->next;
+}
+
+
+void ConnectAsPrev(ListNode cur, ListNode prev){
+    assert(cur != NULL && prev != NULL);
+    cur->prev = prev;
+    return;
+}
+
+
+void ConnectAsNext(ListNode cur, ListNode next){
+    assert(cur != NULL && next != NULL);
+    cur->next = next;
+    return;
+}
+
+
+ListNode GetListHead(List L){
+    assert(L != NULL);
+    return L->next;
+}
+
+
+void AssignListHead(List L, ListNode LN){
+    assert(L != NULL && LN != NULL);
+    L->next = LN;
+    return;
 }

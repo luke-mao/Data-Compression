@@ -35,12 +35,25 @@ ListNode ListNodeCreate(TreeNode);      // just include the treenode, with a nul
 ListNode ListNodeDestroy(ListNode);     // recursion, delete this node and all next nodes
 TreeNode ListNodeGetTreeNode(ListNode);
 
+// connection
+ListNode GetPrev(ListNode);
+ListNode GetNext(ListNode);
+void ConnectAsPrev(ListNode cur, ListNode prev);
+void ConnectAsNext(ListNode cur, ListNode next);
+
+
 // List
 List ListCreate(void);
 List ListDestroy(List);
 void ListInsert(List, ListNode);              // insert listnode into list, similar to insertion sort
 void ListShow(List);
-ListNode ListGetFromTreeNode(List, TreeNode);
+
+TreeNode GetTreeNodeFromListNode(ListNode);
+ListNode GetListNodeFromTreeNode(List, TreeNode);
+
 ListNode FindParentListNode(ListNode LN);
+
+ListNode GetListHead(List);
+void AssignListHead(List, ListNode);
 
 #endif
