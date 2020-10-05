@@ -14,6 +14,8 @@ ListNode FindParentListNode(ListNode);
 
 void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p);
 
+ListNode FindLeaderInTheBlock(ListNode);
+
 
 // add .v suffix
 char* compression_create_output_filename(char* filename_in){
@@ -214,7 +216,6 @@ void ListUpdateForFirstChar(List L, Tree tr){
 
 
 void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_len_p, int c, FILE* fp){
-
     assert(tr != NULL && L != NULL && d != NULL);
     assert(buffer_p != NULL && buffer_len_p != NULL && (*buffer_len_p) >= 0 && (*buffer_len_p)<8);
     assert(c >= 0);
@@ -264,6 +265,8 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
 
         // new symbol node
         ListNode LN_c = ListNodeCreate(trn_c);
+        // for the new symbol, insert into dictionary
+        DictionaryInsert(d, LN_c);
         
         // reconstruct the list, left to right
         L->next = LN_NYT;
@@ -295,11 +298,11 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
 
     // while p is not the root of the tree
     while (LN_p->trn->c != ROOT_C){
-        SlideAndIncrement(LN_p);
+        SlideAndIncrement(L, LN_p);
     }
 
     if (LN_LeafToIncrement != NULL){
-        SlidAndIncrement(LN_LeafToIncrement);
+        SlidAndIncrement(L, LN_LeafToIncrement);
     }
 
     return;
@@ -322,7 +325,7 @@ ListNode FindParentListNode(ListNode LN){
 }
 
 
-void SlidAndIncrement(List, L, ListNode LN_p){
+void SlidAndIncrement(List L, ListNode LN_p){
     // perform some checks, the inside treenode cannot be root or NYT
     assert(L != NULL);
     assert(LN_p != NULL && LN_p->trn != NULL);  
@@ -471,81 +474,114 @@ void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
 }
 
 
-
-
-
-
-
-
-
-
-void SwapWithLeader(List L, ListNode L_n){
+void SwapWithLeader(List L, ListNode LN){
+    // check not null, and the list node must be a leaf node
     assert(L != NULL);
-    assert(L_n != NULL);
+    assert(LN != NULL && LN->trn != NULL && LN->trn->c >= 0);
 
-    // Since this function is only called during the early stage
-    // of update the tree, L_n->trn must be a leaf node
-    // look for the leader of the leaf block, with same occ
-    ListNode L_n_leader = L_n->next;
+    ListNode LN_leader = FindLeaderInTheBlock(LN);
 
-    while (L_n_leader->trn->occ == L_n->trn->occ && L_n_leader->trn->c >= 0){
-        L_n_leader = L_n_leader->next;
-    }
-
-    // move one position backwards
-    L_n_leader = L_n_leader->prev;
-
-    // if it is same as the input node, no need to swap
-    if (L_n_leader != L_n){
-        // do the swap on both the tree level and the linked list level
+    // if the leader of the block exist 
+    // (otherwise means the LN is already the leader of the block)
+    if (LN_leader != NULL){
+        // first reconnect at the tree level
+        TreeNode trn_p = LN->trn->parent;
         
-        // first do the swap on the tree level
-        TreeNode trn_leader_old_p = L_n_leader->trn->parent;
-        TreeNode trn_old_p = L_n->trn->parent;
-        
-        // from child to parent
-        L_n_leader->trn->parent = trn_old_p;
-        L_n->trn->parent = trn_leader_old_p;
+        bool trn_is_right_child = false;
+        if (trn_p->right == LN->trn){
+            trn_is_right_child = true;
+        }
 
-        // from parent to child for leader
-        if (trn_leader_old_p->left == L_n_leader->trn){
-            trn_leader_old_p->left = L_n->trn;
+        TreeNode trn_leader_p = LN_leader->trn->parent;
+        
+        bool trn_leader_p_is_right_child = false;
+        if (trn_leader_p->right == LN_leader->trn){
+            trn_leader_p_is_right_child = true;
+        }
+
+        // after get all information, reconnect at the tree level
+        
+        // bottom up
+        LN->trn->parent = trn_leader_p;
+        LN_leader->trn->parent = trn_p;
+
+        // top to bottom
+        if (trn_is_right_child){
+            trn_p->right = LN_leader->trn;
         }
         else{
-            trn_leader_old_p->right = L_n->trn;
+            trn_p->left = LN_leader->trn;
         }
-        
-        // from parent to child to the node
-        if (trn_old_p->left == L_n->trn){
-            trn_old_p->left = L_n_leader->trn;
+
+        if (trn_leader_p_is_right_child){
+            trn_leader_p->right = LN->trn;
         }
         else{
-            trn_old_p->right = L_n_leader->trn;
+            trn_leader_p->left = LN->trn;
         }
 
-        // now do the swap on the linked list level
-        // now the link should be:
-        // L_n->prev => L_n_leader => L_n->next => 
-        //          => xx => L_n_leader->prev => L_n => L_n_leader->next 
-        // Name the following vairables:
-        // first => L_n_leader => second => ... => third => L_n => fourth
-        ListNode first = L_n->prev;
-        ListNode second = L_n->next;
-        ListNode third = L_n_leader->prev;
-        ListNode fourth = L_n_leader->next;
+        // then reconnect at the list level
+        // take caution when LN and LN_leader are next to each other
+        if (LN->next == LN_leader){
+            // if next to each other
+            ListNode left = LN->prev;
+            ListNode right = LN_leader->next;
 
-        // first do the forward link
-        first->next = L_n_leader;
-        L_n_leader->next = second;
-        third->next = L_n;
-        L_n->next = fourth;
+            // the new order is: left, LN_leader, LN, right
+            // forward
+            left->next = LN_leader;
+            LN_leader->next = LN;
+            LN->next = right;
+            // backward
+            right->prev = LN;
+            LN->prev = LN_leader;
+            LN_leader->prev = left;
+        }
+        else{
+            // if they are not next to each other
+            // old order: left, LN, mid1, ..., mid2, LN_leader, right
+            ListNode left = LN->prev;
+            ListNode mid1 = LN->next;
+            ListNode mid2 = LN_leader->prev;
+            ListNode right = LN_leader->next;
 
-        // then do the backward link
-        fourth->prev = L_n;
-        L_n->prev = third;
-        second->prev = L_n_leader;
-        L_n_leader->prev = first;
+            // new order: left, LN_leader, mid1, ...., mid2, LN, right
+            // forward 
+            left->next = LN_leader;
+            LN_leader->next = mid1;
+            mid2->next = LN;
+            LN->next = right;
+            // backwaard
+            right->prev = LN;
+            LN->prev = mid2;
+            mid1->prev = LN_leader;
+            LN_leader->prev = left;
+        }
     }
 
     return;
+}
+
+
+// only look for leader of a leaf node
+ListNode FindLeaderInTheBlock(ListNode LN){
+    assert(LN != NULL && LN->trn != NULL && LN->trn->c >= 0);
+
+    int occ = LN->trn->occ;
+    ListNode result = LN->next;
+
+    while (result != NULL && result->trn->c >= 0 && result->trn->occ == occ){
+        result = result->next;
+    }
+
+    // move one step back
+    result = result->prev;
+
+    // if valid, return
+    if (result->trn->c >= 0 && result->trn->occ == occ){
+        return result;
+    }
+    else{
+        return NULL;
+    }
 }
