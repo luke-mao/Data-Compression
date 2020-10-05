@@ -59,9 +59,13 @@ Tree TreeDestroy(Tree tr){
 }
 
 
+// in-order traversal
 void TreeShow(Tree tr){
     assert(tr != NULL);
+
+    printf("Tree: ");
     TreeShowFunction(tr->root);
+    printf("\n");
     return;
 }
 
@@ -78,6 +82,9 @@ void TreeShowFunction(TreeNode trn){
         }
         else if (trn->c == ROOT_C){
             printf("(Root, %d) ", trn->occ);
+        }
+        else if (trn->c == NYT_C){
+            printf("(NYT, %d) ", trn->occ);
         }
         else{
             // internal node

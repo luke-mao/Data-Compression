@@ -18,25 +18,26 @@ void compress(char* filename);
 void decompress(char* filename);
 
 
+// main function
 int main(int argc, char** argv){
     if (argc != 3){
-        fprintf(stderr, "Usage: %s <-compress|-decompress> <file>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <-c|-d> <file>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
 
-    if (strcmp(argv[1], "-compress") == 0){
+    if (strcmp(argv[1], "-c") == 0){
         compress(argv[2]);
     }
-    else if (strcmp(argv[1], "-decompress") == 0){
+    else if (strcmp(argv[1], "-d") == 0){
         decompress(argv[2]);
     }
     else{
-        fprintf(stderr, "Usage: %s <-compress|-decompress> <file>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <-c|-d> <file>\n", argv[0]);
         exit(EXIT_FAILURE);        
     }
 
-    return;
+    return 0;
 }
 
 
@@ -53,7 +54,7 @@ void compress(char* filename_in){
     compress_file_and_output(fp_in, fp_out);
     
     // print some statistics
-    compression_status(fp_in, fp_out);
+    compression_status(filename_in, filename_out, fp_in, fp_out);
 
     // close files
     close_the_file(fp_in);
@@ -77,7 +78,7 @@ FILE* open_the_file(char* filename, char* mode){
 
     FILE* fp = fopen(filename, mode);
     assert(fp != NULL);
-    return;
+    return fp;
 }
 
 

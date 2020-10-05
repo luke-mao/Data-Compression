@@ -98,6 +98,9 @@ void ListShow(List L){
         else if(listn->trn->c == ROOT_C){
             printf("(Root, ");
         }
+        else if (listn->trn->c == NYT_C){
+            printf("(NYT, ");
+        }
         else{
             printf("(Internal, ");
         }

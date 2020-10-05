@@ -6,6 +6,7 @@
 #include "tree.h"
 #include "list.h"
 #include "dictionary.h"
+#include "file.h"
 #include "compress.h"
 
 
@@ -44,97 +45,40 @@ void compress_file_and_output(FILE* fp_in, FILE* fp_out){
     int buffer = 0;
     int buffer_len = 0;
 
+    // before reading the first char
+    // print a byte to output file first, later used to record num of digits pad
+    FilePrintEmptyByte(fp_out);
+
     // for the first char, build the tree and list naively
     int c = getc(fp_in);
     TreeUpdateForFirstChar(tr, c);
     ListUpdateForFirstChar(L, tr);
     DictionaryInsert(d, L->next->next);
-    FilePrintDigit(&buffer, &buffer_len, fp_out, 0);
+    FilePrintByte(&buffer, &buffer_len, fp_out, c);
 
-    // need to have a buffer to print 
-    // and for the first char, print 0
+    // debug
+    // printf("After first char = %c %d\n", c, c);
+    // TreeShow(tr);
+    // ListShow(L);
+    // printf("\n");
 
 
+    // read and compress
     while ((c=getc(fp_in)) != EOF){
-        UpdateAndPrint(tr, L, d, c, &buffer, &buffer_len, fp_out);
+        // debug
+        // printf("Insert char = %c %d\n", c, c);
+        UpdateAndPrint(tr, L, d, &buffer, &buffer_len, c, fp_out);
     }
+
+    // at the end, pad the file
+    int num_pad = FilePrintPad(&buffer, &buffer_len, fp_out);
+    FileRePrintFirstByte(num_pad, fp_out);
 
 
     // clean everything
     TreeDestroy(tr);
     ListDestroy(L);
-    DictionaryDestroy(d);
-
-    return;
-}
-
-
-// single digit
-void FilePrintDigit(int* buffer_p, int* buffer_len_p, FILE* fp, int new_digit){
-    assert(buffer_p != NULL && buffer_len_p != NULL);
-    assert(fp != NULL);
-    assert(new_digit == 0 || new_digit == 1);
-
-    (*buffer_p) <<= 1;
-    (*buffer_p) |= (new_digit & 1);
-    (*buffer_len_p) += 1;
-
-    // print when 8
-    if (*buffer_len_p == 8){
-        fputc(*buffer_p, fp);
-        
-        // reset
-        (*buffer_p) = 0;
-        (*buffer_len_p) = 0;
-    }
-
-    return;
-}
-
-
-// for new node, print the byte
-void FilePrintByte(int* buffer_p, int* buffer_len_p, FILE* fp, int new_byte){
-    assert(buffer_p != NULL && buffer_len_p != NULL);
-    assert(fp != NULL);
-    assert(new_byte >= 0);
-
-    if (*buffer_len_p == 0){
-        fputc(new_byte, fp);
-    }
-    else{
-        int this_digit;
-        int mask;
-        // input into FilePrintDigit one by one
-        for (int i = 7; i >= 0; i--){
-            mask = 1 << i;
-            this_digit = ((new_byte & mask) >> i) & 1; 
-            FilePrintDigit(buffer_p, buffer_len_p, fp, this_digit);
-        }
-    }
-
-    return;
-}
-
-
-// print the node path from the root node
-// left = 0, right = 1
-void FilePrintNode(int* buffer_p, int* buffer_len_p, FILE* fp, TreeNode trn){
-    assert(buffer_p != NULL && buffer_len_p != NULL);
-    assert(fp != NULL);
-    assert(trn != NULL);
-    
-    // recursion, go upwards from the tree first
-    if (trn->parent->c != ROOT_C){
-        FilePrintNode(buffer_p, buffer_len_p, fp, trn->parent);
-    }
-
-    // now trn's parent is the root node
-    if (trn == trn->parent->left){
-        FilePrintDigit(buffer_p, buffer_len_p, fp, 0);
-    }
-    else{
-        FilePrintDigit(buffer_p, buffer_len_p, fp, 1);
-    }
+    DictionaryDestroy(d, ASCII_SIZE);
 
     return;
 }
@@ -227,13 +171,18 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
 
     // for new symbol
     if (LN_p == NULL){
+        // printf("new symbol\n");
+
         LN_p = ListGetFromTreeNode(L, tr->NYT);
-        FilePrintNode(buffer_p, buffer_len_p, fp, LN_p->trn);
+
+        FilePrintNodePath(buffer_p, buffer_len_p, fp, LN_p->trn);
+        
         FilePrintByte(buffer_p, buffer_len_p, fp, c);
     }
     else{
+        // printf("existing symbol\n");
         // existing symbol, print the trace only
-        FilePrintNode(buffer_p, buffer_len_p, fp, LN_p->trn);
+        FilePrintNodePath(buffer_p, buffer_len_p, fp, LN_p->trn);
     }
 
     // now the list node LN_c is either listnode NYT, or the listnode for the symbol
@@ -241,12 +190,17 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
     ListNode LN_LeafToIncrement = NULL;
     TreeNode trn_p = LN_p->trn;
 
+
     if (trn_p->c == NYT_C){
         // change the current trn NYT to internal trn
         trn_p->c = INTERNAL_NODE_C;
 
         // create two new trn: NYT and the new symbol
         TreeNode trn_NYT = TreeNodeCreate(NYT_C, 0, NULL, NULL, NULL);
+        // update the NYT in the tree
+        tr->NYT = trn_NYT;
+
+
         TreeNode trn_c = TreeNodeCreate(c, 0, NULL, NULL, NULL);
 
         // reconstruct that tree
@@ -295,19 +249,31 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
         }
     }
 
+    // debug
+    // printf("before slide&incre:\n");
+    // TreeShow(tr);
+    // ListShow(L);
 
     // while p is not the root of the tree
     while (LN_p->trn->c != ROOT_C){
-        SlideAndIncrement(L, LN_p);
+        SlideAndIncrement(L, &LN_p);
     }
 
+    // increase root weight
+    LN_p->trn->occ += 1;
+
     if (LN_LeafToIncrement != NULL){
-        SlidAndIncrement(L, LN_LeafToIncrement);
+        SlideAndIncrement(L, &LN_LeafToIncrement);
     }
+
+    // debug
+    // printf("after slide&incre:\n");
+    // TreeShow(tr);
+    // ListShow(L);
+    // printf("\n");
 
     return;
 }
-
 
 
 ListNode FindParentListNode(ListNode LN){
@@ -325,30 +291,30 @@ ListNode FindParentListNode(ListNode LN){
 }
 
 
-void SlidAndIncrement(List L, ListNode LN_p){
+void SlideAndIncrement(List L, ListNode* LN_p){
     // perform some checks, the inside treenode cannot be root or NYT
     assert(L != NULL);
-    assert(LN_p != NULL && LN_p->trn != NULL);  
-    assert(LN_p->trn->c != ROOT_C && LN_p->trn->c != NYT_C);
+    assert(LN_p != NULL && (*LN_p)->trn != NULL);  
+    assert((*LN_p)->trn->c != ROOT_C && (*LN_p)->trn->c != NYT_C);
 
     // record its original parent tree node
-    TreeNode trn_fp = LN_p->trn->parent;
+    TreeNode trn_fp = (*LN_p)->trn->parent;
 
     // find the boundary of the slide
     ListNode LN_start = NULL;
     ListNode LN_final = NULL;
-    FindSlideBoundary(LN_p, &LN_start, &LN_final);
+    FindSlideBoundary(*LN_p, &LN_start, &LN_final);
 
 
     // if nothing to slide, skip to bottom to increase the weight
     if (LN_start != NULL && LN_final != NULL){
         ListNode LN_this = LN_start;
-        TreeNode prev_parent = LN_p->trn->parent;
+        TreeNode prev_parent = (*LN_p)->trn->parent;
 
         bool prev_is_right_child = false;
         bool cur_is_right_child = false;
 
-        if (prev_parent->right == LN_p->trn){
+        if (prev_parent->right == (*LN_p)->trn){
             prev_is_right_child = true;
         }
 
@@ -381,17 +347,17 @@ void SlidAndIncrement(List L, ListNode LN_p){
         }
 
         // now connect LN_p->trn with the prev_paarent
-        LN_p->trn->parent = prev_parent;
+        (*LN_p)->trn->parent = prev_parent;
         if (prev_is_right_child){
-            prev_parent->right = LN_p->trn;
+            prev_parent->right = (*LN_p)->trn;
         }
         else{
-            prev_parent->left = LN_p->trn;
+            prev_parent->left = (*LN_p)->trn;
         }
 
         // so far, re-link at the tree level is completed
         // move the LN_p to the position before LN_final
-        ListNode LN_left_most = LN_p->prev;
+        ListNode LN_left_most = (*LN_p)->prev;
         ListNode LN_right_before_final = LN_final->prev;
 
         // the original sequence is: LN_left_most, LN_p, LN_start, xx, xx, LN_right_before_final, LN_final
@@ -399,27 +365,27 @@ void SlidAndIncrement(List L, ListNode LN_p){
 
         // forward link
         LN_left_most->next = LN_start;
-        LN_right_before_final->next = LN_p;
-        LN_p->next = LN_final;
+        LN_right_before_final->next = (*LN_p);
+        (*LN_p)->next = LN_final;
 
         // backward link
-        LN_final->prev = LN_p;
-        LN_p->prev = LN_right_before_final;
+        LN_final->prev = (*LN_p);
+        (*LN_p)->prev = LN_right_before_final;
         LN_start->prev = LN_left_most;
     }
 
 
     // increase p weight
-    LN_p->trn->occ += 1;
+    (*LN_p)->trn->occ += 1;
     
     // move upwards
     // if p is an internal node, p = original parent of p
     // if p is a leaf node, p = new parent of p
-    if (LN_p->trn->c == INTERNAL_NODE_C){
-        LN_p = ListGetFromTreeNode(L, trn_fp);
+    if ((*LN_p)->trn->c == INTERNAL_NODE_C){
+        (*LN_p) = ListGetFromTreeNode(L, trn_fp);
     }
     else{
-        LN_p = ListGetFromTreeNode(L, LN_p->trn->parent);
+        (*LN_p) = ListGetFromTreeNode(L, (*LN_p)->trn->parent);
     }
 
     return;
@@ -446,7 +412,7 @@ void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
             (*LN_start_p) = LN->next;
 
             cur = LN->next->next;
-            while (cur != NULL && cur->next->trn->c == INTERNAL_NODE_C && cur->next->trn->occ == target_occ){
+            while (cur != NULL && cur->trn->c == INTERNAL_NODE_C && cur->trn->occ == target_occ){
                 cur = cur->next;
             }
 
@@ -456,7 +422,7 @@ void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
     }
     else{
         // internal node: find range of leaf nodes with occ = target_occ + 1
-        target_occ += 1;
+        target_occ = LN->trn->occ + 1;
 
         if (LN->next != NULL && LN->next->trn->c >= 0 && LN->next->trn->occ == target_occ){
             (*LN_start_p) = LN->next;
