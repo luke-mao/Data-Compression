@@ -96,7 +96,7 @@ void compression_status(char* name_in, char* name_out, FILE* fp_in, FILE* fp_out
 
     printf("Input file: %s\nSize: %.3f KB\n", name_in, (float) size_in / 1024);
     printf("Output file: %s\nSize: %.3f KB\n", name_out, (float) size_out / 1024);
-    printf("Space saving: %.3f%%\n", (float) 1 - (float)size_out / (float) size_in);
+    printf("Space saving: %.2f%%\n", ((float) 1 - (float)size_out / (float) size_in) * 100);
 
     return;
 }
