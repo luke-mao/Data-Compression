@@ -59,27 +59,6 @@ Tree TreeDestroy(Tree tr){
 }
 
 
-void TreeUpdateForFirstChar(Tree tr, int c){
-    assert(tr != NULL);
-    
-    // this is the first char
-    // split the root into NYT on the left and new node on the right
-    // the tree is created already
-
-    // first create a TreeNode for the new char
-    TreeNode newNode = TreeNodeCreate(c, 1, NULL, NULL, tr->root);
-    TreeNode newNYT = TreeNodeCreate(NYT_C, 0, NULL, NULL, tr->root);
-
-    tr->root->left = newNYT;
-    tr->root->right = newNode;
-
-    tr->root->occ += 1;
-    tr->NYT = newNYT;
-
-    return;
-}
-
-
 void TreeShow(Tree tr){
     assert(tr != NULL);
     TreeShowFunction(tr->root);

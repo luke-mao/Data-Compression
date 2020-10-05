@@ -21,22 +21,13 @@ Dictionary DictionaryCreate(int size){
 }
 
 
+// before destroying, the tree and list has been already free
+// so only free the outermost structure is enough
 Dictionary DictionaryDestroy(Dictionary d, int size){
     assert (d != NULL);
 
-    // since the dictionary is full of list nodes
-    // i will check if an entry is null or not
-    // if not null, destroy that list node
-
-    for (int i = 0; i < size; i++){
-        if (d[i] != NULL){
-            d[i] = ListNodeDestroy(d[i]);
-        }
-    }
-
     free(d);
     d = NULL;
-
     return d;
 }
 
