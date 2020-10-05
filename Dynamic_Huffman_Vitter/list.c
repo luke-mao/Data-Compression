@@ -112,8 +112,15 @@ void ListShow(List L){
 }          
 
 
-ListNode ListGetNYT(List L){
-    assert(L != NULL);
-    assert(L->next->trn->c == NYT_C);
-    return L->next;
+ListNode ListGetFromTreeNode(List L, TreeNode trn){
+    assert(L != NULL && trn != NULL);
+
+    // linear scan the list
+    ListNode result = L->next;
+    while (result != NULL && result->trn != trn){
+        result = result->next;
+    }
+
+    assert(result != NULL);
+    return result;
 }

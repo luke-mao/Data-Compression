@@ -2,10 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 #include "tree.h"
 #include "list.h"
 #include "dictionary.h"
 #include "compress.h"
+
+
+// in update function, find the parent node of this list node
+ListNode FindParentListNode(ListNode);
+
+void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p);
 
 
 // add .v suffix
@@ -76,7 +83,7 @@ void FilePrintDigit(int* buffer_p, int* buffer_len_p, FILE* fp, int new_digit){
         
         // reset
         (*buffer_p) = 0;
-        (*buffer_len_p) = 0
+        (*buffer_len_p) = 0;
     }
 
     return;
@@ -84,23 +91,50 @@ void FilePrintDigit(int* buffer_p, int* buffer_len_p, FILE* fp, int new_digit){
 
 
 // for new node, print the byte
-void FilePrintByte()
+void FilePrintByte(int* buffer_p, int* buffer_len_p, FILE* fp, int new_byte){
+    assert(buffer_p != NULL && buffer_len_p != NULL);
+    assert(fp != NULL);
+    assert(new_byte >= 0);
+
+    if (*buffer_len_p == 0){
+        fputc(new_byte, fp);
+    }
+    else{
+        int this_digit;
+        int mask;
+        // input into FilePrintDigit one by one
+        for (int i = 7; i >= 0; i--){
+            mask = 1 << i;
+            this_digit = ((new_byte & mask) >> i) & 1; 
+            FilePrintDigit(buffer_p, buffer_len_p, fp, this_digit);
+        }
+    }
+
+    return;
+}
 
 
-// for NYT, or 
+// print the node path from the root node
+// left = 0, right = 1
 void FilePrintNode(int* buffer_p, int* buffer_len_p, FILE* fp, TreeNode trn){
     assert(buffer_p != NULL && buffer_len_p != NULL);
     assert(fp != NULL);
     assert(trn != NULL);
     
-    // recursion: go to the root node first, then print digit one by one
-    if (trn->c != ROOT_C){
-        FilePrintNode(trn->parent);
+    // recursion, go upwards from the tree first
+    if (trn->parent->c != ROOT_C){
+        FilePrintNode(buffer_p, buffer_len_p, fp, trn->parent);
     }
 
-    // now reach the root
+    // now trn's parent is the root node
+    if (trn == trn->parent->left){
+        FilePrintDigit(buffer_p, buffer_len_p, fp, 0);
+    }
+    else{
+        FilePrintDigit(buffer_p, buffer_len_p, fp, 1);
+    }
 
-
+    return;
 }
 
 
@@ -186,203 +220,263 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
     assert(c >= 0);
     assert(fp != NULL);
 
-    // for a symbol c, first look for its treenode from the dictionary
-    ListNode LN_c = DictionarySearch(d, c);
-    if (LN_c == NULL){
-        LN_c = ListGetNYT(L);
-    }
+    // find the listnode of the symbol
+    // the symbol can be new, or existing
+    ListNode LN_p = DictionarySearch(d, c);
 
-    // print the upwards trace of the inside treenode
-    FILE
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Slide and increment "listn->trn"
-// Vitter's paper slides the tree nodes only.
-// However, in order to maintain the implicit numbering,
-// I need to slide and shift the list nodes 
-// which contain the corresponding treenodes.
-// So the shift needs to be done 
-// both in the "linked list" level and the "tree" level
-
-void SlidAndIncrement(List L, ListNode p){
-    assert(L != NULL);
-    assert(p != NULL);
-
-
-    TreeNode old_parent_p_trn = p->trn->parent;
-
-
-    // consider two cases: p->trn is leaf / internal node
-    if (p->trn->c >= 0){
-        // the node is a leaf node
-        // (already swap to be the leader of the leaf node)
-        // so the internal node should be next to it
-        ListNode start = p->next;
-        ListNode final = NULL;
-
-        // check if it is the same occ we want
-        if (start->trn->occ == p->trn->occ){
-            // determine the final
-            final = start->next;
-            while (final != NULL && final->trn->occ == p->trn->occ){
-                final = final->next;
-            }
-
-            // so shift the range [start, final), note does not include final !!
-            // first rearrange the tree node parent connection
-            // the connection is established both upwards and downwards
-            // Node sequence: p->trn, start->trn, XX, XX, XX, final
-            ListNode prev = p;
-            ListNode curr = start;
-            TreeNode curr_trn_old_parent;
-
-
-            // This part needs to be reviewed!!!
-            while (curr != final){
-                curr_trn_old_parent = curr->trn->parent;
-
-                curr->trn->parent = prev->trn->parent;
-
-                if (prev->trn->left == prev->trn){
-                    prev->trn->left = curr->trn;
-                }
-                else{
-                    prev->trn->right = curr->trn;
-                }
-
-                // move forwards
-                prev = curr;
-                curr = curr->next;
-            }
-
-            // now curr = "final", so prev is the last node
-            p->trn->parent = curr_trn_old_parent;
-            if (curr_trn_old_parent->trn->left == prev->trn){
-                prev->trn->left = curr->trn;
-            }
-            else{
-                prev->trn->right = curr->trn;
-            }
-
-
-            // and finally, reform the connection at the linked list level
-            // new connection: p->prev => start => xx => xx => final->prev => p => final
-            p->prev->next = start;
-            start->prev = p->prev;
-
-            final->prev->next = p;
-            p->prev = final->prev;
-
-            p->next = final;
-            final->prev = p;
-        }
-
-        // if the start is not the same occ, then nothing to slide & increment
-        // so stop 
-
+    // for new symbol
+    if (LN_p == NULL){
+        LN_p = ListGetFromTreeNode(L, tr->NYT);
+        FilePrintNode(buffer_p, buffer_len_p, fp, LN_p->trn);
+        FilePrintByte(buffer_p, buffer_len_p, fp, c);
     }
     else{
-        // internal node
-        // at upper level of implementation, stop when p is a root node
-        // so no need to worry about root node here
+        // existing symbol, print the trace only
+        FilePrintNode(buffer_p, buffer_len_p, fp, LN_p->trn);
+    }
 
-        // for internal nodes, shift leaf node with p->trn->occ + 1
-        // first determine the boundary [start, final)
-        ListNode start = p->next;
-        ListNode final = NULL;
-        if (start->trn->occ == (p->trn->occ + 1) && start->trn->c >= 0){
-            // find the end boundary
-            final = start;
-            while (final != NULL && 
-                final->trn->occ == (p->trn->occ+1) && final->trn->c >= 0){
-                // move forward
-                final = final->next;               
-            }
+    // now the list node LN_c is either listnode NYT, or the listnode for the symbol
 
-            // so shift the range [start, final), note does not include final !!
-            // first rearrange the tree node parent connection
-            // the connection is established both upwards and downwards
-            // Node sequence: p->trn, start->trn, XX, XX, XX, final
-            ListNode prev = p;
-            ListNode curr = start;
-            ListNode curr_trn_old_parent;
+    ListNode LN_LeafToIncrement = NULL;
+    TreeNode trn_p = LN_p->trn;
 
-            while (curr != final){
-                curr_trn_old_parent = curr->trn->parent;
+    if (trn_p->c == NYT_C){
+        // change the current trn NYT to internal trn
+        trn_p->c = INTERNAL_NODE_C;
 
-                curr->trn->parent = prev->trn->parent;
+        // create two new trn: NYT and the new symbol
+        TreeNode trn_NYT = TreeNodeCreate(NYT_C, 0, NULL, NULL, NULL);
+        TreeNode trn_c = TreeNodeCreate(c, 0, NULL, NULL, NULL);
 
-                if (prev->trn->left == prev->trn){
-                    prev->trn->left = curr->trn;
-                }
-                else{
-                    prev->trn->right = curr->trn;
-                }
+        // reconstruct that tree
+        // top to down
+        trn_p->left = trn_NYT;
+        trn_p->right = trn_c;
+        // bottom to up
+        trn_NYT->parent = trn_p;
+        trn_c->parent = trn_p;
 
-                // move forwards
-                prev = curr;
-                curr = curr->next;
-            }
+        // add to list
+        ListNode LN_internal = LN_p;        // the NYT list node
+        
+        // create list node for the new NYT and new symbol node
+        ListNode LN_NYT = ListNodeCreate(trn_NYT);
 
-            // now curr = "final", so prev is the last node
-            p->trn->parent = curr_trn_old_parent;
-            if (curr_trn_old_parent->trn->left == prev->trn){
-                prev->trn->left = curr->trn;
-            }
-            else{
-                prev->trn->right = curr->trn;
-            }
+        // new symbol node
+        ListNode LN_c = ListNodeCreate(trn_c);
+        
+        // reconstruct the list, left to right
+        L->next = LN_NYT;
+        LN_NYT->next = LN_c;
+        LN_c->next = LN_internal;
 
+        // right to left
+        LN_internal->prev = LN_c;
+        LN_c->prev = LN_NYT;
 
-            // and finally, reform the connection at the linked list level
-            // new connection: p->prev => start => xx => xx => final->prev => p => final
-            p->prev->next = start;
-            start->prev = p->prev;
+        // p = parent of the symbol node, LN_p does not change
+        // leaf to increment = the right child of trn_p
+        LN_LeafToIncrement = LN_c;        
+    }
+    else{
+        // swap trn_p in the tree with the leader of its block
+        SwapWithLeader(L, LN_p);
+        
+        // if p is the sibling of the 0 node
+        if (trn_p->parent->left->c == NYT_C){
+            // leaf to increment = p, but assign with its outer structure list node
+            LN_LeafToIncrement = LN_p;
 
-            final->prev->next = p;
-            p->prev = final->prev;
-
-            p->next = final;
-            final->prev = p;
+            // p = parent of p, need to find the list node
+            LN_p = FindParentListNode(LN_p);
         }
     }
 
 
-    // increase p weight
-    p->trn->occ += 1;
-    
-    // move upwards
-    if (p->trn->c >= 0){
-        p = p->trn->parent;
+    // while p is not the root of the tree
+    while (LN_p->trn->c != ROOT_C){
+        SlideAndIncrement(LN_p);
     }
-    else{
-        p = old_parent_p_trn;
+
+    if (LN_LeafToIncrement != NULL){
+        SlidAndIncrement(LN_LeafToIncrement);
     }
 
     return;
 }
+
+
+
+ListNode FindParentListNode(ListNode LN){
+    assert(LN != NULL);
+
+    // simply go down LN->next, and compare the trn
+    ListNode current = LN->next;
+    while (current != NULL && current->trn != LN->trn->parent){
+        current = current->next;
+    }
+
+    // the return must not be null, otherwise error
+    assert(current != NULL);
+    return current;
+}
+
+
+void SlidAndIncrement(List, L, ListNode LN_p){
+    // perform some checks, the inside treenode cannot be root or NYT
+    assert(L != NULL);
+    assert(LN_p != NULL && LN_p->trn != NULL);  
+    assert(LN_p->trn->c != ROOT_C && LN_p->trn->c != NYT_C);
+
+    // record its original parent tree node
+    TreeNode trn_fp = LN_p->trn->parent;
+
+    // find the boundary of the slide
+    ListNode LN_start = NULL;
+    ListNode LN_final = NULL;
+    FindSlideBoundary(LN_p, &LN_start, &LN_final);
+
+
+    // if nothing to slide, skip to bottom to increase the weight
+    if (LN_start != NULL && LN_final != NULL){
+        ListNode LN_this = LN_start;
+        TreeNode prev_parent = LN_p->trn->parent;
+
+        bool prev_is_right_child = false;
+        bool cur_is_right_child = false;
+
+        if (prev_parent->right == LN_p->trn){
+            prev_is_right_child = true;
+        }
+
+        TreeNode this_parent;
+
+
+        while (LN_this != LN_final){
+            // check current is right child or not
+            this_parent = LN_this->trn->parent;
+            if (this_parent->right == LN_this->trn){
+                cur_is_right_child = true;
+            }
+
+            // connect LN_this->trn as a child of prev_parent
+            // connect from bottom up
+            LN_this->trn->parent = prev_parent;
+            // connect from top to bottom
+            if (prev_is_right_child){
+                prev_parent->right = LN_this->trn;
+            }
+            else{
+                prev_parent->left = LN_this->trn;
+            }
+
+            // prepare for next list node
+            LN_this = LN_this->next;
+            prev_parent = this_parent;
+            prev_is_right_child = cur_is_right_child;
+            cur_is_right_child = false;
+        }
+
+        // now connect LN_p->trn with the prev_paarent
+        LN_p->trn->parent = prev_parent;
+        if (prev_is_right_child){
+            prev_parent->right = LN_p->trn;
+        }
+        else{
+            prev_parent->left = LN_p->trn;
+        }
+
+        // so far, re-link at the tree level is completed
+        // move the LN_p to the position before LN_final
+        ListNode LN_left_most = LN_p->prev;
+        ListNode LN_right_before_final = LN_final->prev;
+
+        // the original sequence is: LN_left_most, LN_p, LN_start, xx, xx, LN_right_before_final, LN_final
+        // the new sequence is: LN_left_most, LN_start, xx, xx, LN_right_before_final, LN_p, LN_final
+
+        // forward link
+        LN_left_most->next = LN_start;
+        LN_right_before_final->next = LN_p;
+        LN_p->next = LN_final;
+
+        // backward link
+        LN_final->prev = LN_p;
+        LN_p->prev = LN_right_before_final;
+        LN_start->prev = LN_left_most;
+    }
+
+
+    // increase p weight
+    LN_p->trn->occ += 1;
+    
+    // move upwards
+    // if p is an internal node, p = original parent of p
+    // if p is a leaf node, p = new parent of p
+    if (LN_p->trn->c == INTERNAL_NODE_C){
+        LN_p = ListGetFromTreeNode(L, trn_fp);
+    }
+    else{
+        LN_p = ListGetFromTreeNode(L, LN_p->trn->parent);
+    }
+
+    return;
+}
+
+
+// range of slide: [start, final), note the right endpoint is not included
+void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
+    // check all pointers
+    assert(LN != NULL && LN_start_p != NULL && LN_final_p != NULL);
+    
+    // also check the trn must be either a leaf node or an internal node
+    assert(LN->trn->c >= 0 || LN->trn->c == INTERNAL_NODE_C);
+
+    int target_occ;
+    ListNode cur;
+
+    if (LN->trn->c >= 0){
+        // for a leaf node, find the same weight internal node range
+        target_occ = LN->trn->occ;
+
+        if (LN->next != NULL && LN->next->trn->c == INTERNAL_NODE_C && LN->next->trn->occ == target_occ){
+            // find the start
+            (*LN_start_p) = LN->next;
+
+            cur = LN->next->next;
+            while (cur != NULL && cur->next->trn->c == INTERNAL_NODE_C && cur->next->trn->occ == target_occ){
+                cur = cur->next;
+            }
+
+            // find the final
+            (*LN_final_p) = cur;
+        }
+    }
+    else{
+        // internal node: find range of leaf nodes with occ = target_occ + 1
+        target_occ += 1;
+
+        if (LN->next != NULL && LN->next->trn->c >= 0 && LN->next->trn->occ == target_occ){
+            (*LN_start_p) = LN->next;
+
+            cur = LN->next->next;
+            while (cur != NULL && cur->trn->c >= 0 && cur->trn->occ == target_occ){
+                cur = cur->next;
+            }
+
+            (*LN_final_p) = cur;
+        }
+    }
+
+    return;
+}
+
+
+
+
+
+
+
+
 
 
 void SwapWithLeader(List L, ListNode L_n){

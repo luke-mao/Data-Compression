@@ -40,7 +40,7 @@ List ListCreate(void);
 List ListDestroy(List);
 void ListInsert(List, ListNode);              // insert listnode into list, similar to insertion sort
 void ListShow(List);
-ListNode ListGetNYT(List);
+ListNode ListGetFromTreeNode(List, TreeNode);
 
 
 

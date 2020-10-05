@@ -20,7 +20,11 @@
 char* compression_create_output_filename(char* filename_in);
 void compress_file_and_output(FILE* fp_in, FILE* fp_out);
 void compression_status(char* name_in, char* name_out, FILE* fp_in, FILE* fp_out);
+
+
+// file print
 void FilePrintDigit(int* buffer_p, int* buffer_len_p, FILE* fp, int new_digit);
+void FilePrintByte(int* buffer_p, int* buffer_len_p, FILE* fp, int new_byte);
 void FilePrintNode(int* buffer_p, int* buffer_len_p, FILE* fp, TreeNode trn);
 
 
