@@ -14,6 +14,8 @@
 #include "tree.h"
 #include "list.h"
 #include "dictionary.h"
+#include "file.h"
+#include "update.h"
 
 
 // top functions

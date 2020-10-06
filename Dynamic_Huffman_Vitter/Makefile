@@ -1,14 +1,14 @@
 CC=gcc
-CFLAGS=-Wall -g -c
-LIBS=tree.o list.o file.o dictionary.o update.o compress.o
-BINS=a
+LIBS=tree.o list.o file.o dictionary.o update.o compress.o decompress.o
+BINS=vitter
 
 all : $(LIBS) $(BINS)
 
-a 					: main.c $(LIBS)
-						$(CC) -o a main.c $(LIBS)
-
-compress.o			: compress.c tree.o list.o dictionary.o file.o
+vitter 					: main.c $(LIBS)
+						$(CC) main.c $(LIBS) -lm -o vitter
+decompress.o		: decompress.c tree.o list.o dictionary.o file.o update.o
+						$(CC) -c -o decompress.o decompress.c -lm
+compress.o			: compress.c tree.o list.o dictionary.o file.o update.o
 update.o 			: update.c tree.o list.o dictionary.o
 dictionary.o		: dictionary.c tree.o list.o
 file.o				: file.c list.o tree.o
@@ -16,4 +16,4 @@ list.o				: list.c tree.o
 tree.o				: tree.c
 
 clean : 
-	rm -f $(BINS) $(LIBS) *.v
+	rm -f $(BINS) $(LIBS) *.v deVitter_*
