@@ -121,8 +121,8 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
         ConnectAsLeftChild(trn_NYT, trn_p);
         ConnectAsRightChild(trn_c, trn_p);
         // bottom to up
-        ConnectToParent(trn_NYT, trn_p);
-        ConnectToParent(trn_c, trn_p);
+        ConnectAsParent(trn_NYT, trn_p);
+        ConnectAsParent(trn_c, trn_p);
 
         // add to list
         ListNode LN_internal = LN_p;        // the NYT list node
@@ -223,7 +223,7 @@ void SlideAndIncrement(List L, ListNode* LN_p){
 
             // connect LN_this->trn as a child of prev_parent
             // connect from bottom up
-            ConnectToParent(GetTreeNode(LN_this), prev_parent);
+            ConnectAsParent(GetTreeNode(LN_this), prev_parent);
             // connect from top to bottom
             if (prev_is_right_child){
                 ConnectAsRightChild(GetTreeNode(LN_this), prev_parent);
@@ -241,7 +241,7 @@ void SlideAndIncrement(List L, ListNode* LN_p){
 
 
         // now connect LN_p->trn with the prev_paarent
-        ConnectToParent(GetTreeNode(*LN_p), prev_parent);
+        ConnectAsParent(GetTreeNode(*LN_p), prev_parent);
         
         if (prev_is_right_child){
             ConnectAsRightChild(GetTreeNode(*LN_p), prev_parent);
@@ -298,69 +298,69 @@ void SwapWithLeader(List L, ListNode LN){
     // (otherwise means the LN is already the leader of the block)
     if (LN_leader != NULL){
         // first reconnect at the tree level
-        TreeNode trn_p = LN->trn->parent;        
+        TreeNode trn_p = GetParent(GetTreeNode(LN));;        
         bool trn_is_right_child = IsRightChild(GetTreeNode(LN), trn_p);
 
-        TreeNode trn_leader_p = LN_leader->trn->parent;
+        TreeNode trn_leader_p = GetParent(GetTreeNode(LN_leader));
         bool trn_leader_p_is_right_child = IsRightChild(GetTreeNode(LN_leader), trn_leader_p);
 
         // after get all information, reconnect at the tree level
         
         // bottom up
-        LN->trn->parent = trn_leader_p;
-        LN_leader->trn->parent = trn_p;
+        ConnectAsParent(GetTreeNode(LN), trn_leader_p);
+        ConnectAsParent(GetTreeNode(LN_leader), trn_p);
 
         // top to bottom
         if (trn_is_right_child){
-            trn_p->right = LN_leader->trn;
+            ConnectAsRightChild(GetTreeNode(LN_leader), trn_p);
         }
         else{
-            trn_p->left = LN_leader->trn;
+            ConnectAsLeftChild(GetTreeNode(LN_leader), trn_p);
         }
 
         if (trn_leader_p_is_right_child){
-            trn_leader_p->right = LN->trn;
+            ConnectAsRightChild(trn_leader_p, GetTreeNode(LN));
         }
         else{
-            trn_leader_p->left = LN->trn;
+            ConnectAsLeftChild(trn_leader_p, GetTreeNode(LN));
         }
 
         // then reconnect at the list level
         // take caution when LN and LN_leader are next to each other
         if (LN->next == LN_leader){
             // if next to each other
-            ListNode left = LN->prev;
-            ListNode right = LN_leader->next;
+            ListNode left = GetPrev(LN);
+            ListNode right = GetNext(LN_leader);
 
             // the new order is: left, LN_leader, LN, right
             // forward
-            left->next = LN_leader;
-            LN_leader->next = LN;
-            LN->next = right;
+            ConnectAsNext(left, LN_leader);
+            ConnectAsNext(LN_leader, LN);
+            ConnectAsNext(LN, right);
             // backward
-            right->prev = LN;
-            LN->prev = LN_leader;
-            LN_leader->prev = left;
+            ConnectAsPrev(right, LN);
+            ConnectAsPrev(LN, LN_leader);
+            ConnectAsPrev(LN_leader, left);
         }
         else{
             // if they are not next to each other
             // old order: left, LN, mid1, ..., mid2, LN_leader, right
-            ListNode left = LN->prev;
-            ListNode mid1 = LN->next;
-            ListNode mid2 = LN_leader->prev;
-            ListNode right = LN_leader->next;
+            ListNode left = GetPrev(LN);
+            ListNode mid1 = GetNext(LN);
+            ListNode mid2 = GetPrev(LN_leader);
+            ListNode right = GetNext(LN_leader);
 
             // new order: left, LN_leader, mid1, ...., mid2, LN, right
             // forward 
-            left->next = LN_leader;
-            LN_leader->next = mid1;
-            mid2->next = LN;
-            LN->next = right;
+            ConnectAsNext(left, LN_leader);
+            ConnectAsNext(LN_leader, mid1);
+            ConnectAsNext(mid2, LN);
+            ConnectAsNext(LN, right);
             // backwaard
-            right->prev = LN;
-            LN->prev = mid2;
-            mid1->prev = LN_leader;
-            LN_leader->prev = left;
+            ConnectAsPrev(right, LN);
+            ConnectAsPrev(LN, mid2);
+            ConnectAsPrev(mid1, LN_leader);
+            ConnectAsPrev(LN_leader, left);
         }
     }
 
@@ -374,6 +374,13 @@ void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
     assert(LN != NULL && LN_start_p != NULL && LN_final_p != NULL);
     
     // also check the trn must be either a leaf node or an internal node
+    printf("LN->trn->c = %d is leaf = %d, is internal = %d\n", LN->trn->c, IsLeafNode(LN->trn), IsInternalNode(LN->trn));
+
+    // is Leaf is wrong, so 
+    printf("%d %d\n", LN->trn->left == NULL, LN->trn->right == NULL);
+    printf("%d\n", LN->trn->right->c);
+
+
     assert(IsLeafNode(GetTreeNode(LN)) || IsInternalNode(GetTreeNode(LN)));
 
     int target_occ;
@@ -381,15 +388,16 @@ void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
 
     if (IsLeafNode(GetTreeNode(LN))){
         // for a leaf node, find the same weight internal node range
-        target_occ = LN->trn->occ;
+        target_occ = GetOcc(GetTreeNode(LN));
 
-        if (LN->next != NULL && LN->next->trn->c == INTERNAL_NODE_C && LN->next->trn->occ == target_occ){
+        if (GetNext(LN) != NULL && IsInternalNode(GetTreeNode(GetNext(LN))) && GetOcc(GetTreeNode(GetNext(LN))) == target_occ){
             // find the start
-            (*LN_start_p) = LN->next;
+            (*LN_start_p) = GetNext(LN);
 
-            cur = LN->next->next;
-            while (cur != NULL && cur->trn->c == INTERNAL_NODE_C && cur->trn->occ == target_occ){
-                cur = cur->next;
+            cur = GetNext(GetNext(LN));
+            
+            while (cur != NULL && IsInternalNode(GetTreeNode(cur)) && GetOcc(GetTreeNode(cur)) == target_occ){
+                cur = GetNext(cur);
             }
 
             // find the final
@@ -398,14 +406,15 @@ void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
     }
     else{
         // internal node: find range of leaf nodes with occ = target_occ + 1
-        target_occ = LN->trn->occ + 1;
+        target_occ = GetOcc(GetTreeNode(LN)) + 1;
 
-        if (LN->next != NULL && LN->next->trn->c >= 0 && LN->next->trn->occ == target_occ){
-            (*LN_start_p) = LN->next;
+        if (LN->next != NULL && IsSymbolNode(GetTreeNode(GetNext(LN))) && GetOcc(GetTreeNode(GetNext(LN))) == target_occ){
+            (*LN_start_p) = GetNext(LN);
 
-            cur = LN->next->next;
-            while (cur != NULL && cur->trn->c >= 0 && cur->trn->occ == target_occ){
-                cur = cur->next;
+            cur = GetNext(GetNext(LN));   
+              
+            while (cur != NULL && IsSymbolNode(GetTreeNode(cur)) && GetOcc(GetTreeNode(cur)) == target_occ){
+                cur = GetNext(cur);
             }
 
             (*LN_final_p) = cur;
@@ -420,18 +429,18 @@ void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
 ListNode FindLeaderInTheBlock(ListNode LN){
     assert(LN != NULL && GetTreeNode(LN) != NULL && IsLeafNode(GetTreeNode(LN)));
 
-    int occ = LN->trn->occ;
-    ListNode result = LN->next;
+    int occ = GetOcc(GetTreeNode(LN));
+    ListNode result = GetNext(LN);
 
-    while (result != NULL && IsLeafNode(GetTreeNode(result)) && result->trn->occ == occ){
-        result = result->next;
+    while (result != NULL && IsLeafNode(GetTreeNode(result)) && GetOcc(GetTreeNode(result)) == occ){
+        result = GetNext(result);
     }
 
     // move one step back
-    result = result->prev;
+    result = GetPrev(result);
 
     // if valid, return
-    if (IsLeafNode(GetTreeNode(result)) && result->trn->occ == occ){
+    if (IsLeafNode(GetTreeNode(result)) && GetOcc(GetTreeNode(result)) == occ){
         return result;
     }
     else{

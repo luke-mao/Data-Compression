@@ -143,11 +143,10 @@ bool IsSymbolNode(TreeNode trn){
 }
 
 
-bool IsNYTSubling(TeeeNode trn){
+bool IsNYTSubling(TreeNode trn){
     assert(trn != NULL);
     // must be the right child
-    assert(IsRightChild(trn, trn->parent));
-    return IsNYTNode(trn->parent->left);
+    return IsRightChild(trn, trn->parent) && IsNYTNode(trn->parent->left);
 }
 
 void IncreaseOcc(TreeNode trn){
@@ -159,7 +158,7 @@ void IncreaseOcc(TreeNode trn){
 }
 
 
-int TreeNodeGetOcc(TreeNode trn){
+int GetOcc(TreeNode trn){
     assert(trn != NULL && trn->occ >= 0);
     return trn->occ;
 }

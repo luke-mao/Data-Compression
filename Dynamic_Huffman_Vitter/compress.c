@@ -50,7 +50,7 @@ void compress_file_and_output(FILE* fp_in, FILE* fp_out){
     FilePrintByte(&buffer, &buffer_len, fp_out, c);
 
     // debug
-    // printf("After first char = %c %d\n", c, c);
+    printf("After first char = %c %d\n", c, c);
     // TreeShow(tr);
     // ListShow(L);
     // printf("\n");
@@ -59,7 +59,7 @@ void compress_file_and_output(FILE* fp_in, FILE* fp_out){
     // read and compress
     while ((c=getc(fp_in)) != EOF){
         // debug
-        // printf("Insert char = %c %d\n", c, c);
+        printf("Insert char = %c %d\n", c, c);
         UpdateAndPrint(tr, L, d, &buffer, &buffer_len, c, fp_out);
     }
 

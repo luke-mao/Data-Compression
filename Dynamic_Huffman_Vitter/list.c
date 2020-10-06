@@ -115,13 +115,13 @@ void ListShow(List L){
 }          
 
 
-TreeNode ListNodeGetTreeNode(ListNode LN){
+TreeNode GetTreeNode(ListNode LN){
     assert(LN != NULL && LN->trn != NULL);
     return LN->trn;
 }
 
 
-ListNode TreeNodeGetListNode(List L, TreeNode trn){
+ListNode GetListNode(List L, TreeNode trn){
     assert(L != NULL && trn != NULL);
 
     // linear scan the list

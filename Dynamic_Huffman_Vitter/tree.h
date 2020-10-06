@@ -76,10 +76,10 @@ bool IsNYTSubling(TreeNode trn);
 
 // increase occ
 void IncreaseOcc(TreeNode trn);
-int TreeNodeGetOcc(TreeNode trn);
+int GetOcc(TreeNode trn);
 
 // connect
-void ConnectToParent(TreeNode child, TreeNode parent);
+void ConnectAsParent(TreeNode child, TreeNode parent);
 void ConnectAsRightChild(TreeNode child, TreeNode parent);
 void ConnectAsLeftChild(TreeNode child, TreeNode parent);
 
