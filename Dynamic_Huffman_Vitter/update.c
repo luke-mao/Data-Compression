@@ -72,33 +72,12 @@ void ListUpdateForFirstChar(List L, Tree tr){
 }
 
 
-void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_len_p, int c, FILE* fp){
-    assert(tr != NULL && L != NULL && d != NULL);
-    assert(buffer_p != NULL && buffer_len_p != NULL && (*buffer_len_p) >= 0 && (*buffer_len_p)<8);
+void UpdateTreeAndList(Tree tr, List L, Dictionary d, ListNode LN_p, int c){
+    assert(tr != NULL);
+    assert(L != NULL);
+    assert(d != NULL);
+    assert(LN_p != NULL);
     assert(c >= 0);
-    assert(fp != NULL);
-    
-
-    // find the listnode of the symbol
-    // the symbol can be new, or existing
-    ListNode LN_p = DictionarySearch(d, c);
-    
-
-    // for new symbol
-    if (LN_p == NULL){
-        // printf("new symbol\n");
-
-        LN_p = GetListNode(L, GetNYT(tr));
-
-        FilePrintNodePath(buffer_p, buffer_len_p, fp, GetTreeNode(LN_p));
-        
-        FilePrintByte(buffer_p, buffer_len_p, fp, c);
-    }
-    else{
-        // printf("existing symbol\n");
-        // existing symbol, print the trace only
-        FilePrintNodePath(buffer_p, buffer_len_p, fp, GetTreeNode(LN_p));
-    }
 
     // now the list node LN_c is either listnode NYT, or the listnode for the symbol
 
@@ -304,7 +283,7 @@ void SwapWithLeader(List L, ListNode LN){
         // top to bottom
         ConnectAsChild(GetTreeNode(LN_leader), trn_p, trn_is_right_child);
         ConnectAsChild(GetTreeNode(LN), trn_leader_p, trn_leader_p_is_right_child);
-        
+
 
         // then reconnect at the list level
         // take caution when LN and LN_leader are next to each other

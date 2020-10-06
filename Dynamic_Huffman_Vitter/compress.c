@@ -11,6 +11,8 @@
 #include "compress.h"
 
 
+void update_and_print(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_len_p, int c, FILE* fp);
+
 // add .v suffix
 char* compression_create_output_filename(char* filename_in){
     assert(filename_in != NULL);
@@ -60,7 +62,7 @@ void compress_file_and_output(FILE* fp_in, FILE* fp_out){
     while ((c=getc(fp_in)) != EOF){
         // debug
         // printf("Insert char = %c %d\n", c, c);
-        UpdateAndPrint(tr, L, d, &buffer, &buffer_len, c, fp_out);
+        update_and_print(tr, L, d, &buffer, &buffer_len, c, fp_out);
     }
 
     // at the end, pad the file
@@ -91,5 +93,39 @@ void compression_status(char* name_in, char* name_out, FILE* fp_in, FILE* fp_out
     printf("Output file: %s\nSize: %.3f KB\n", name_out, (float) size_out / 1024);
     printf("Space saving: %.2f%%\n", ((float) 1 - (float)size_out / (float) size_in) * 100);
 
+    return;
+}
+
+
+void update_and_print(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_len_p, int c, FILE* fp){
+    assert(tr != NULL && L != NULL && d != NULL);
+    assert(buffer_p != NULL && buffer_len_p != NULL && (*buffer_len_p) >= 0 && (*buffer_len_p)<8);
+    assert(c >= 0);
+    assert(fp != NULL);
+    
+
+    // find the listnode of the symbol
+    // the symbol can be new, or existing
+    ListNode LN_p = DictionarySearch(d, c);
+    
+
+    // for new symbol
+    if (LN_p == NULL){
+        // printf("new symbol\n");
+
+        LN_p = GetListNode(L, GetNYT(tr));
+
+        FilePrintNodePath(buffer_p, buffer_len_p, fp, GetTreeNode(LN_p));
+        
+        FilePrintByte(buffer_p, buffer_len_p, fp, c);
+    }
+    else{
+        // printf("existing symbol\n");
+        // existing symbol, print the trace only
+        FilePrintNodePath(buffer_p, buffer_len_p, fp, GetTreeNode(LN_p));
+    }
+
+    // call the main update function
+    UpdateTreeAndList(tr, L, d, LN_p, c);
     return;
 }
