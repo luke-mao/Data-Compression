@@ -36,12 +36,6 @@ ListNode ListNodeDestroy(ListNode listn){
 }
 
 
-TreeNode ListNodeGetTreeNode(ListNode LN){
-    assert(LN != NULL && LN->trn != NULL);
-    return LN->trn;
-}
-
-
 // create the list: dummy head
 List ListCreate(void){
     List L = (List) malloc(sizeof(struct _ListNode));
@@ -121,13 +115,13 @@ void ListShow(List L){
 }          
 
 
-TreeNode GetTreeNodeFromListNode(ListNode L){
-    assert(L != NULL && L->trn != NULL);
-    return L->trn;
+TreeNode ListNodeGetTreeNode(ListNode LN){
+    assert(LN != NULL && LN->trn != NULL);
+    return LN->trn;
 }
 
 
-ListNode GetListNodeFromTreeNode(List L, TreeNode trn){
+ListNode TreeNodeGetListNode(List L, TreeNode trn){
     assert(L != NULL && trn != NULL);
 
     // linear scan the list
