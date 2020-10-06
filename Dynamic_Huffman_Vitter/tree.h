@@ -81,6 +81,7 @@ int GetOcc(TreeNode trn);
 // connect
 void ConnectAsParent(TreeNode child, TreeNode parent);
 void ConnectAsRightChild(TreeNode child, TreeNode parent);
+void ConnectAsChild(TreeNode child, TreeNode parent, bool isRightChild);
 void ConnectAsLeftChild(TreeNode child, TreeNode parent);
 
 TreeNode GetRoot(Tree tr);

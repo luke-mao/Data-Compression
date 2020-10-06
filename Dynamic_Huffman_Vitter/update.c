@@ -77,10 +77,12 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
     assert(buffer_p != NULL && buffer_len_p != NULL && (*buffer_len_p) >= 0 && (*buffer_len_p)<8);
     assert(c >= 0);
     assert(fp != NULL);
+    
 
     // find the listnode of the symbol
     // the symbol can be new, or existing
     ListNode LN_p = DictionarySearch(d, c);
+    
 
     // for new symbol
     if (LN_p == NULL){
@@ -102,7 +104,6 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
 
     ListNode LN_LeafToIncrement = NULL;
     TreeNode trn_p = GetTreeNode(LN_p);
-
 
     if (IsNYTNode(trn_p)){
         // change the current trn NYT to internal trn
@@ -151,7 +152,7 @@ void UpdateAndPrint(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_le
     else{
         // swap trn_p in the tree with the leader of its block
         SwapWithLeader(L, LN_p);
-        
+
         // if p is the sibling of the 0 node
         if (IsNYTSubling(trn_p)){
             // leaf to increment = p, but assign with its outer structure list node
@@ -225,12 +226,7 @@ void SlideAndIncrement(List L, ListNode* LN_p){
             // connect from bottom up
             ConnectAsParent(GetTreeNode(LN_this), prev_parent);
             // connect from top to bottom
-            if (prev_is_right_child){
-                ConnectAsRightChild(GetTreeNode(LN_this), prev_parent);
-            }
-            else{
-                ConnectAsLeftChild(GetTreeNode(LN_this), prev_parent);
-            }
+            ConnectAsChild(GetTreeNode(LN_this), prev_parent, prev_is_right_child);
 
             // prepare for next list node
             LN_this = GetNext(LN_this);
@@ -242,13 +238,7 @@ void SlideAndIncrement(List L, ListNode* LN_p){
 
         // now connect LN_p->trn with the prev_paarent
         ConnectAsParent(GetTreeNode(*LN_p), prev_parent);
-        
-        if (prev_is_right_child){
-            ConnectAsRightChild(GetTreeNode(*LN_p), prev_parent);
-        }
-        else{
-            ConnectAsLeftChild(GetTreeNode(*LN_p), prev_parent);
-        }
+        ConnectAsChild(GetTreeNode(*LN_p), prev_parent, prev_is_right_child);
 
 
         // so far, re-link at the tree level is completed
@@ -290,6 +280,7 @@ void SwapWithLeader(List L, ListNode LN){
     // check not null, and the list node must be a leaf node
     assert(L != NULL);
     assert(LN != NULL && GetTreeNode(LN) != NULL && IsLeafNode(GetTreeNode(LN)) );
+    
 
     // find the leader of the block, could be null
     ListNode LN_leader = FindLeaderInTheBlock(LN);
@@ -311,19 +302,9 @@ void SwapWithLeader(List L, ListNode LN){
         ConnectAsParent(GetTreeNode(LN_leader), trn_p);
 
         // top to bottom
-        if (trn_is_right_child){
-            ConnectAsRightChild(GetTreeNode(LN_leader), trn_p);
-        }
-        else{
-            ConnectAsLeftChild(GetTreeNode(LN_leader), trn_p);
-        }
-
-        if (trn_leader_p_is_right_child){
-            ConnectAsRightChild(trn_leader_p, GetTreeNode(LN));
-        }
-        else{
-            ConnectAsLeftChild(trn_leader_p, GetTreeNode(LN));
-        }
+        ConnectAsChild(GetTreeNode(LN_leader), trn_p, trn_is_right_child);
+        ConnectAsChild(GetTreeNode(LN), trn_leader_p, trn_leader_p_is_right_child);
+        
 
         // then reconnect at the list level
         // take caution when LN and LN_leader are next to each other
@@ -372,16 +353,8 @@ void SwapWithLeader(List L, ListNode LN){
 void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p){
     // check all pointers
     assert(LN != NULL && LN_start_p != NULL && LN_final_p != NULL);
-    
-    // also check the trn must be either a leaf node or an internal node
-    printf("LN->trn->c = %d is leaf = %d, is internal = %d\n", LN->trn->c, IsLeafNode(LN->trn), IsInternalNode(LN->trn));
-
-    // is Leaf is wrong, so 
-    printf("%d %d\n", LN->trn->left == NULL, LN->trn->right == NULL);
-    printf("%d\n", LN->trn->right->c);
-
-
-    assert(IsLeafNode(GetTreeNode(LN)) || IsInternalNode(GetTreeNode(LN)));
+    // also, the trn must be either a symbol node or an internal node
+    assert( IsSymbolNode(GetTreeNode(LN)) || IsInternalNode(GetTreeNode(LN)) );
 
     int target_occ;
     ListNode cur;

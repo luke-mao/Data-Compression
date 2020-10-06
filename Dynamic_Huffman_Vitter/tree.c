@@ -133,7 +133,7 @@ bool IsLeafNode(TreeNode trn){
 
 bool IsNYTNode(TreeNode trn){
     assert(trn != NULL);
-    return trn->c == NYT_C && trn->left == NULL && trn->right == NULL;
+    return IsLeafNode(trn) && trn->c == NYT_C ;
 }
 
 
@@ -181,6 +181,19 @@ void ConnectAsRightChild(TreeNode child, TreeNode parent){
 void ConnectAsLeftChild(TreeNode child, TreeNode parent){
     assert(child != NULL && parent != NULL);
     parent->left = child;
+    return;
+}
+
+void ConnectAsChild(TreeNode child, TreeNode parent, bool isRightChild){
+    assert(child != NULL && parent != NULL);
+    
+    if (isRightChild){
+        parent->right = child;
+    }
+    else{
+        parent->left = child;
+    }
+
     return;
 }
 

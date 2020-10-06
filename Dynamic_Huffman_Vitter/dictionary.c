@@ -47,3 +47,20 @@ void DictionaryInsert(Dictionary d, ListNode listn){
     d[listn->trn->c] = listn;
     return;
 }        
+
+
+void DictionaryShow(Dictionary d, int c){
+    assert(d != NULL && c >= 1);
+
+    ListNode LN;
+
+    for (int i = 0; i < c; i++){
+        LN = DictionarySearch(d, i);
+        if (LN != NULL){
+            printf("For char %c %d: issymbol = %d\n", i, i, IsSymbolNode(LN->trn));
+        }
+    }
+
+    return;
+
+}
