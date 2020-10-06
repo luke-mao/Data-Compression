@@ -3,14 +3,10 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <string.h>
+#include "file.h"
 #include "update.h"
 #include "compress.h"
 #include "decompress.h"
-
-
-// File handling questions
-FILE* open_the_file(char* filename, char* mode);
-FILE* close_the_file(FILE* fp);
 
 
 // top-level compress and decompress functions
@@ -69,25 +65,25 @@ void compress(char* filename_in){
 
 
 void decompress(char* filename){
-    puts("not finish");
+    assert(filename != NULL);
+    char* filename_out = decompression_create_output_filename(filename);
+
+    FILE* fp_in = open_the_file(filename, "rb");
+    FILE* fp_out = open_the_file(filename_out, "wb");
+
+    decompress_file_and_output(fp_in, fp_out);
+
+    decompression_status(filename, filename_out, fp_in, fp_out);
+
+    close_the_file(fp_in);
+    close_the_file(fp_out);
+
+    free(filename_out);
+    filename_out = NULL;
     return;
 }
 
 
-FILE* open_the_file(char* filename, char* mode){
-    assert(filename != NULL &&  mode != NULL);
 
-    FILE* fp = fopen(filename, mode);
-    assert(fp != NULL);
-    return fp;
-}
-
-
-FILE* close_the_file(FILE* fp){
-    assert(fp != NULL);
-    fclose(fp);
-    fp = NULL;
-    return fp;
-}
 
 

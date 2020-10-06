@@ -5,6 +5,24 @@
 #include "list.h"
 
 
+FILE* open_the_file(char* filename, char* mode){
+    assert(filename != NULL &&  mode != NULL);
+
+    FILE* fp = fopen(filename, mode);
+    assert(fp != NULL);
+    return fp;
+}
+
+
+FILE* close_the_file(FILE* fp){
+    assert(fp != NULL);
+    fclose(fp);
+    fp = NULL;
+    return fp;
+}
+
+
+
 // single digit
 void FilePrintDigit(int* buffer_p, int* buffer_len_p, FILE* fp, int new_digit){
     assert(buffer_p != NULL && buffer_len_p != NULL);

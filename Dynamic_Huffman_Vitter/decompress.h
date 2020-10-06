@@ -17,6 +17,8 @@
 
 
 // function
-
+char* decompression_create_output_filename(char* filename_in);
+void decompress_file_and_output(FILE* fp_in, FILE* fp_out);
+void decompression_status(char* name_in, char* name_out, FILE* fp_in, FILE* fp_out);
 
 #endif 

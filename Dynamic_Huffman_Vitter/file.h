@@ -8,6 +8,11 @@
 #include "list.h"
 
 
+// File handling questions
+FILE* open_the_file(char* filename, char* mode);
+FILE* close_the_file(FILE* fp);
+
+
 // file print
 void FilePrintDigit(int* buffer_p, int* buffer_len_p, FILE* fp, int new_digit);
 void FilePrintByte(int* buffer_p, int* buffer_len_p, FILE* fp, int new_byte);
