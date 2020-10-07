@@ -16,15 +16,24 @@
 #include "list.h"
 
 
-// define the structure
+// an array of listnodes, size usually = 256
 typedef ListNode* Dictionary; 
 
 
-// functions
+// create and destroy, size usually = 256
 Dictionary DictionaryCreate(int size);
 Dictionary DictionaryDestroy(Dictionary, int size);
-ListNode DictionarySearch(Dictionary, int c);           // return either NULL, or the list node
+
+
+// search, return array[c] or NULL
+ListNode DictionarySearch(Dictionary, int c);    
+
+
+// insert new listnode into position based on listnode->trn->c
 void DictionaryInsert(Dictionary, ListNode);        
+
+
+// debug use: print the dictionary
 void DictionaryShow(Dictionary, int size);
 
 #endif 

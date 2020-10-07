@@ -56,17 +56,18 @@ struct _Tree{
 typedef struct _Tree *Tree;
 
 
-// functions related to tree and tree node
+// create and destroy the treenode
 TreeNode TreeNodeCreate(int c, int occ, TreeNode left, TreeNode right, TreeNode parent);
 TreeNode TreeNodeDestroy(TreeNode);
 
+
+// create and destroy the tree
 Tree TreeCreate(void);
 Tree TreeDestroy(Tree);
 
-// determine if two tree nodes are right child or left child, right = true
-bool IsRightChild(TreeNode child, TreeNode parent);
 
-// determine the property
+// some check functions for the tree
+bool IsRightChild(TreeNode child, TreeNode parent);
 bool IsRootNode(TreeNode trn);
 bool IsInternalNode(TreeNode trn);
 bool IsLeafNode(TreeNode trn);
@@ -74,29 +75,41 @@ bool IsNYTNode(TreeNode trn);
 bool IsSymbolNode(TreeNode trn);
 bool IsNYTSubling(TreeNode trn);
 
-// increase occ
-void IncreaseOcc(TreeNode trn);
-int GetOcc(TreeNode trn);
 
-// connect
+// increase occ by 1 for the treenode
+void IncreaseOcc(TreeNode trn);
+
+
+// construct the tree: connect to parent, right, left,
+// or input the right/left boolean variable and connect
 void ConnectAsParent(TreeNode child, TreeNode parent);
 void ConnectAsRightChild(TreeNode child, TreeNode parent);
-void ConnectAsChild(TreeNode child, TreeNode parent, bool isRightChild);
 void ConnectAsLeftChild(TreeNode child, TreeNode parent);
+void ConnectAsChild(TreeNode child, TreeNode parent, bool isRightChild);
 
+
+// Get the root node or NYT node
 TreeNode GetRoot(Tree tr);
 TreeNode GetNYT(Tree tr);
 
+
+// Get the information from the treenode
+int GetC(TreeNode trn);
+int GetOcc(TreeNode trn);
 TreeNode GetRight(TreeNode trn);
 TreeNode GetLeft(TreeNode trn);
 TreeNode GetParent(TreeNode trn);
 
-void ResetToInternalNode(TreeNode trn);
 
+// when a new symbol is introduced,
+// reset the previous NYT node to internal node,
+// and reset the NYT pointer of the tree
+void ResetToInternalNode(TreeNode trn);
 void UpdateNYT(Tree tr, TreeNode NYT);
 
 
-// for debug
+// debug use: in-order traversal of the tree
 void TreeShow(Tree);
+
 
 #endif 

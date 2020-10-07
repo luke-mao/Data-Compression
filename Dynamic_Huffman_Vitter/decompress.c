@@ -12,10 +12,14 @@
 #include "decompress.h"
 
 
+// additional function for compression
+// get next bit, or next 1 byte (8 bits)
 int GetOneBit(int* c_p, int* unread_num_p, int* c_next_p, FILE* fp);
 int GetOneByte(int* c_p, int* unread_num_p, int* c_next_p, FILE* fp);
 
 
+// before create the output file name, check if the file is valid
+// by check if it has .v suffix
 bool IsValidFile(char* filename_in);
 
 
@@ -75,8 +79,8 @@ void decompress_file_and_output(FILE* fp_in, FILE* fp_out){
     
     // also update the tree for the first char
     TreeUpdateForFirstChar(tr, c);
-    ListUpdateForFirstChar(L, tr);
-    DictionaryInsert(d, L->next->next);
+    ListNode first_char_LN = ListUpdateForFirstChar(L, tr);
+    DictionaryInsert(d, first_char_LN);
 
     c = getc(fp_in);
     unread_num = 8;
@@ -103,7 +107,7 @@ void decompress_file_and_output(FILE* fp_in, FILE* fp_out){
             }
             else if (IsSymbolNode(trn)){
                 // meet an existing symbol
-                this_byte = trn->c;
+                this_byte = GetC(trn);
             }
 
             // print it out
@@ -140,7 +144,7 @@ void decompress_file_and_output(FILE* fp_in, FILE* fp_out){
         }
 
         if (IsSymbolNode(trn)){
-            this_byte = trn->c;
+            this_byte = GetC(trn);
 
             // print it out
             putc(this_byte, fp_out);

@@ -1,7 +1,5 @@
 /*
-* Compression implementation:
-* Include file handling, creating new file
-* and the compression details
+* Compression implementation
 */
 
 
@@ -18,14 +16,16 @@
 #include "update.h"
 
 
-// top functions
+// generate the compressed file name: add .v suffix
 char* compression_create_output_filename(char* filename_in);
+
+
+// main function for compression
 void compress_file_and_output(FILE* fp_in, FILE* fp_out);
+
+
+// print both file names, and calculate the compression ratio
 void compression_status(char* name_in, char* name_out, FILE* fp_in, FILE* fp_out);
-
-
-// compression implementation
-
 
 
 #endif 

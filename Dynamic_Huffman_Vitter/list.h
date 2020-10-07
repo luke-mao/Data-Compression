@@ -48,13 +48,23 @@ List ListDestroy(List);
 void ListInsert(List, ListNode);              // insert listnode into list, similar to insertion sort
 void ListShow(List);
 
+
 // the following two search for related tree node and list node
 TreeNode GetTreeNode(ListNode);
 ListNode GetListNode(List, TreeNode);
 
+
+// for a given listnode, use its treenode to find its parent treenode,
+// and return the listnode that encapsulate its parent treenode
 ListNode FindParentListNode(ListNode LN);
 
+
+// get the first element of the list, usually the listnode that packs the NYT treenode
 ListNode GetListHead(List);
+
+
+// reassign the list first element
 void AssignListHead(List, ListNode);
+
 
 #endif

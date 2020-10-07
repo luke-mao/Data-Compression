@@ -9,7 +9,14 @@
 #include "update.h"
 
 
+// additional function for the slide and increment: 
+// find the block to slide
+// boundary: from LN_start and does not include LN_final
 void FindSlideBoundary(ListNode LN, ListNode* LN_start_p, ListNode* LN_final_p);
+
+
+// additional function for swap with leader.
+// find the leader of the block, may return NULL
 ListNode FindLeaderInTheBlock(ListNode);
 
 
@@ -37,7 +44,7 @@ void TreeUpdateForFirstChar(Tree tr, int c){
 }
 
 
-void ListUpdateForFirstChar(List L, Tree tr){
+ListNode ListUpdateForFirstChar(List L, Tree tr){
     assert(L != NULL);
     assert(tr != NULL);
     // check root node
@@ -68,7 +75,7 @@ void ListUpdateForFirstChar(List L, Tree tr){
     ConnectAsPrev(LN_root, LN_right);
     ConnectAsPrev(LN_right, LN_NYT);
 
-    return;
+    return LN_right;
 }
 
 

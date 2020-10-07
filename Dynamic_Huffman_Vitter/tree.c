@@ -5,8 +5,8 @@
 #include "tree.h"
 
 
+// additional function for TreeShow
 void TreeShowFunction(TreeNode);
-
 
 
 TreeNode TreeNodeCreate(int c, int occ, TreeNode left, TreeNode right, TreeNode parent){
@@ -59,45 +59,6 @@ Tree TreeDestroy(Tree tr){
 }
 
 
-// in-order traversal
-void TreeShow(Tree tr){
-    assert(tr != NULL);
-
-    printf("Tree: ");
-    TreeShowFunction(tr->root);
-    printf("\n");
-    return;
-}
-
-
-void TreeShowFunction(TreeNode trn){
-    if (trn != NULL){
-        // in-order traversal
-        // show left first
-        TreeShowFunction(trn->left);
-
-        // show myself
-        if (trn->c >= 0){
-            printf("(%c-%d, %d) ", trn->c, trn->c, trn->occ);
-        }
-        else if (trn->c == ROOT_C){
-            printf("(Root, %d) ", trn->occ);
-        }
-        else if (trn->c == NYT_C){
-            printf("(NYT, %d) ", trn->occ);
-        }
-        else{
-            // internal node
-            printf("(Internal, %d) ", trn->occ);
-        }
-
-        // show right
-        TreeShowFunction(trn->right);
-    }
-
-    return;
-}
-
 bool IsRightChild(TreeNode child, TreeNode parent){
     assert(child != NULL && parent != NULL);
     assert(child->parent == parent);
@@ -149,18 +110,13 @@ bool IsNYTSubling(TreeNode trn){
     return IsRightChild(trn, trn->parent) && IsNYTNode(trn->parent->left);
 }
 
+
 void IncreaseOcc(TreeNode trn){
     assert(trn != NULL);
     assert(! IsNYTNode(trn));
     
     trn->occ += 1;
     return;
-}
-
-
-int GetOcc(TreeNode trn){
-    assert(trn != NULL && trn->occ >= 0);
-    return trn->occ;
 }
 
 
@@ -184,6 +140,7 @@ void ConnectAsLeftChild(TreeNode child, TreeNode parent){
     return;
 }
 
+
 void ConnectAsChild(TreeNode child, TreeNode parent, bool isRightChild){
     assert(child != NULL && parent != NULL);
     
@@ -203,9 +160,22 @@ TreeNode GetRoot(Tree tr){
     return tr->root;
 }
 
+
 TreeNode GetNYT(Tree tr){
     assert(tr != NULL);
     return tr->NYT;
+}
+
+
+int GetC(TreeNode trn){
+    assert(trn != NULL);
+    return trn->c;
+}
+
+
+int GetOcc(TreeNode trn){
+    assert(trn != NULL && trn->occ >= 0);
+    return trn->occ;
 }
 
 
@@ -227,6 +197,14 @@ TreeNode GetParent(TreeNode trn){
 }
 
 
+void ResetToInternalNode(TreeNode trn){
+    assert(trn != NULL);
+    assert(! IsInternalNode(trn));
+    trn->c = INTERNAL_NODE_C;
+    return;
+}
+
+
 void UpdateNYT(Tree tr, TreeNode NYT){
     assert(tr != NULL && NYT != NULL);
     assert(IsNYTNode(NYT));
@@ -236,9 +214,41 @@ void UpdateNYT(Tree tr, TreeNode NYT){
 }
 
 
-void ResetToInternalNode(TreeNode trn){
-    assert(trn != NULL);
-    assert(! IsInternalNode(trn));
-    trn->c = INTERNAL_NODE_C;
+// in-order traversal
+void TreeShow(Tree tr){
+    assert(tr != NULL);
+
+    printf("Tree: ");
+    TreeShowFunction(tr->root);
+    printf("\n");
+    return;
+}
+
+
+void TreeShowFunction(TreeNode trn){
+    if (trn != NULL){
+        // in-order traversal
+        // show left first
+        TreeShowFunction(trn->left);
+
+        // show myself
+        if (trn->c >= 0){
+            printf("(%c-%d, %d) ", trn->c, trn->c, trn->occ);
+        }
+        else if (trn->c == ROOT_C){
+            printf("(Root, %d) ", trn->occ);
+        }
+        else if (trn->c == NYT_C){
+            printf("(NYT, %d) ", trn->occ);
+        }
+        else{
+            // internal node
+            printf("(Internal, %d) ", trn->occ);
+        }
+
+        // show right
+        TreeShowFunction(trn->right);
+    }
+
     return;
 }

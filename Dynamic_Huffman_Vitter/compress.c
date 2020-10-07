@@ -11,7 +11,9 @@
 #include "compress.h"
 
 
+// pack the update function, include printing process
 void update_and_print(Tree tr, List L, Dictionary d, int* buffer_p, int* buffer_len_p, int c, FILE* fp);
+
 
 // add .v suffix
 char* compression_create_output_filename(char* filename_in){
@@ -47,8 +49,8 @@ void compress_file_and_output(FILE* fp_in, FILE* fp_out){
     // for the first char, build the tree and list naively
     int c = getc(fp_in);
     TreeUpdateForFirstChar(tr, c);
-    ListUpdateForFirstChar(L, tr);
-    DictionaryInsert(d, L->next->next);
+    ListNode first_char_LN = ListUpdateForFirstChar(L, tr);
+    DictionaryInsert(d, first_char_LN);
     FilePrintByte(&buffer, &buffer_len, fp_out, c);
 
     // debug

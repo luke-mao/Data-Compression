@@ -4,7 +4,7 @@ BINS=vitter
 
 all : $(LIBS) $(BINS)
 
-vitter 					: main.c $(LIBS)
+vitter 				: main.c $(LIBS)
 						$(CC) main.c $(LIBS) -lm -o vitter
 decompress.o		: decompress.c tree.o list.o dictionary.o file.o update.o
 						$(CC) -c -o decompress.o decompress.c -lm

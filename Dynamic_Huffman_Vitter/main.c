@@ -1,3 +1,10 @@
+/*
+* Main function.
+* Usage: ./vitter <-d|-c> <input file>
+* -d for decompression, -c for compression
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -82,8 +89,3 @@ void decompress(char* filename){
     filename_out = NULL;
     return;
 }
-
-
-
-
-

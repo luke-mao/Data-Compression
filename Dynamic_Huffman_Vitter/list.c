@@ -36,6 +36,32 @@ ListNode ListNodeDestroy(ListNode listn){
 }
 
 
+ListNode GetPrev(ListNode LN){
+    assert(LN != NULL);
+    return LN->prev;
+}
+
+
+ListNode GetNext(ListNode LN){
+    assert(LN != NULL);
+    return LN->next;
+}
+
+
+void ConnectAsPrev(ListNode cur, ListNode prev){
+    assert(cur != NULL && prev != NULL);
+    cur->prev = prev;
+    return;
+}
+
+
+void ConnectAsNext(ListNode cur, ListNode next){
+    assert(cur != NULL && next != NULL);
+    cur->next = next;
+    return;
+}
+
+
 // create the list: dummy head
 List ListCreate(void){
     List L = (List) malloc(sizeof(struct _ListNode));
@@ -56,34 +82,7 @@ List ListDestroy(List L){
     free(L);
     L = NULL;
     return L;
-}
-
-
-// only new leaf node can be inserted into the list
-void ListInsertNewSymbol(List L, ListNode newLeafNode){
-    assert(L != NULL);
-    assert(newLeafNode != NULL);
-    assert(newLeafNode->trn != NULL);
-
-    // trn must be a leaf node, and trn must have occ == 1 as a new leaf node
-    assert(newLeafNode->trn->c >= 0);     
-    assert(newLeafNode->trn->occ == 1);
-
-    // so the new symbol will simply be placed on the right of NYT
-    // dummy head -> NYT -> this position -> other nodes
-    ListNode left = L->next;
-    ListNode right = L->next->next;
-
-    // forward link
-    left->next = newLeafNode;
-    newLeafNode->next = right;
-
-    // backward link
-    right->prev = newLeafNode;
-    newLeafNode->prev = left;
-    
-    return;
-}            
+}        
 
 
 void ListShow(List L){
@@ -147,32 +146,6 @@ ListNode FindParentListNode(ListNode LN){
     // the return must not be null, otherwise error
     assert(current != NULL);
     return current;
-}
-
-
-ListNode GetPrev(ListNode LN){
-    assert(LN != NULL);
-    return LN->prev;
-}
-
-
-ListNode GetNext(ListNode LN){
-    assert(LN != NULL);
-    return LN->next;
-}
-
-
-void ConnectAsPrev(ListNode cur, ListNode prev){
-    assert(cur != NULL && prev != NULL);
-    cur->prev = prev;
-    return;
-}
-
-
-void ConnectAsNext(ListNode cur, ListNode next){
-    assert(cur != NULL && next != NULL);
-    cur->next = next;
-    return;
 }
 
 
