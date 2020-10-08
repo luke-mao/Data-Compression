@@ -64,10 +64,11 @@ int GetOneByte(FILE* fp, int* buffer_p, int* unread_num_p, int* buffer_next_p){
     }
     else{
         // extract one part from buffer_p, and another half from the next byte
-        result = (*buffer_p);
+        int mask = power_of_2[*unread_num_p] - 1;
+        result = (*buffer_p) & mask;
         result <<= 8 - (*unread_num_p);
 
-        int mask = pow(2, 8 - (*unread_num_p)) - 1;        
+        mask = power_of_2[8 - (*unread_num_p)] - 1;        
         int other_part = (*buffer_next_p) & (mask <<= (*unread_num_p));
         other_part >>= (*unread_num_p);
         other_part &= mask;
@@ -91,7 +92,7 @@ void PrintOneBit(FILE* fp, int* buffer_p, int* buffer_len_p, int this_bit){
     if ((*buffer_len_p) == 8){
         putc(*buffer_p, fp);
         (*buffer_p) = 0;
-        (*buffer_len_p) = 8;
+        (*buffer_len_p) = 0;
     }
 
     (*buffer_p) <<= 1;
@@ -119,8 +120,7 @@ void PrintOneByte(FILE* fp, int* buffer_p, int* buffer_len_p, int this_byte){
 
     while ((*buffer_len_p) >= 8){
         mask = power_of_2[8] - 1;
-        mask <<= (*buffer_len_p) - 8;
-        c = (*buffer_p) & mask;
+        c = (*buffer_p) & (mask << ((*buffer_len_p) - 8));
         c >>= (*buffer_len_p) - 8;
         c &= mask;
         putc(c, fp);
@@ -133,7 +133,7 @@ void PrintOneByte(FILE* fp, int* buffer_p, int* buffer_len_p, int this_byte){
 
 
 // pad the bit, and return the number of 0 padded
-int PadLastByte(FILE* fp, int* buffer_p, int* buffer_len_p){
+int PadByte(FILE* fp, int* buffer_p, int* buffer_len_p){
     assert(fp != NULL);
     assert(buffer_p != NULL);
     assert(buffer_len_p != NULL && (*buffer_len_p) >= 0 && (*buffer_len_p) <= 8);
@@ -141,6 +141,10 @@ int PadLastByte(FILE* fp, int* buffer_p, int* buffer_len_p){
     int pad_num = 8 - (*buffer_len_p);
     (*buffer_p) <<= pad_num;
     putc(*buffer_p, fp);
+
+    // after padding, reset the buffer and its length to 0
+    (*buffer_p) = 0;
+    (*buffer_len_p) = 0;
 
     return pad_num;
 }
@@ -163,3 +167,11 @@ void RePrintFirstByteWithPadNumber(FILE* fp, int pad_num){
     return;
 }
 
+
+int ReadFirstByteGetPadNumber(FILE* fp){
+    assert(fp != NULL);
+    
+    // the pad number is at the first byte
+    fseek(fp, 0, SEEK_SET);
+    return getc(fp);
+}

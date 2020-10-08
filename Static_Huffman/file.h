@@ -18,10 +18,13 @@ int GetOneByte(FILE* fp, int* buffer_p, int* unread_num_p, int* buffer_next_p);
 void PrintOneBit(FILE* fp, int* buffer_p, int* buffer_len_p, int this_bit);
 void PrintOneByte(FILE* fp, int* buffer_p, int* buffer_len_p, int this_byte);
 
-int PadLastByte(FILE* fp, int* buffer_p, int* buffer_len_p);
+int PadByte(FILE* fp, int* buffer_p, int* buffer_len_p);
 
 void PrintFirstByteEmpty(FILE* fp);
 void RePrintFirstByteWithPadNumber(FILE* fp, int pad_num);
+
+int ReadFirstByteGetPadNumber(FILE* fp);
+
 
 
 #endif 
