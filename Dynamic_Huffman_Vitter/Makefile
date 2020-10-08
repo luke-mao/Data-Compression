@@ -16,4 +16,4 @@ list.o				: list.c tree.o
 tree.o				: tree.c
 
 clean : 
-	rm -f $(BINS) $(LIBS) *.v deVitter_*
+	rm -f $(BINS) $(LIBS) *.v deVitter_* testfile/deVitter_* testfile/*.v
