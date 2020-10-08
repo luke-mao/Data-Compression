@@ -5,7 +5,7 @@
 #include "tree.h"
 
 
-bool IsTreeNodeValid(TreeNode);
+
 
 
 TreeNode TreeNodeCreate(int c, int occ, TreeNode left, TreeNode right){
@@ -59,6 +59,11 @@ Tree TreeDestroy(Tree tr){
 }
 
 
+bool IsTreeNodeValid(TreeNode trn){
+    return trn != NULL && trn->c >= INTERNAL_NODE_C && trn->occ >= 0;
+}
+
+
 bool IsRootNode(TreeNode trn){
     assert(IsTreeNodeValid(trn));
     return trn->c == ROOT_C;
@@ -74,6 +79,14 @@ bool IsInternalNode(TreeNode trn){
 bool IsLeafNode(TreeNode trn){
     assert(IsTreeNodeValid(trn));
     return trn->c >= 0 && trn->left == NULL && trn->right == NULL;
+}
+
+
+// true if trn1 has smaller occ than trn2
+bool IsOccSmaller(TreeNode trn1, TreeNode trn2){
+    assert(IsTreeNodeValid(trn1));
+    assert(IsTreeNodeValid(trn2));
+    return trn1->occ < trn2->occ;
 }
 
 
@@ -132,6 +145,3 @@ void ConnectAsChild(TreeNode child, TreeNode parent, bool isRightChild){
 }
 
 
-bool IsTreeNodeValid(TreeNode trn){
-    return trn != NULL && trn->c >= INTERNAL_NODE_C && trn->occ >= 0;
-}

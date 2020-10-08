@@ -36,9 +36,11 @@ Tree TreeCreate(void);
 Tree TreeDestroy(Tree);
 
 
+bool IsTreeNodeValid(TreeNode);
 bool IsRootNode(TreeNode);
 bool IsInternalNode(TreeNode);
 bool IsLeafNode(TreeNode);
+bool IsOccSmaller(TreeNode trn1, TreeNode trn2);
 
 int GetC(TreeNode);
 int GetOcc(TreeNode);
