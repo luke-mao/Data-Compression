@@ -83,6 +83,12 @@ int GetOneByte(FILE* fp, int* buffer_p, int* unread_num_p, int* buffer_next_p){
 }
 
 
+int GetOneByteSimple(FILE* fp){
+    assert(fp != NULL);
+    return getc(fp);
+}
+
+
 void PrintOneBit(FILE* fp, int* buffer_p, int* buffer_len_p, int this_bit){
     assert(fp != NULL);
     assert(buffer_p != NULL);

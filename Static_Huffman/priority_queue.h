@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "tree.h"
+#include "util.h"
 
 #define SIZE_FACTOR 2
-#define ASCII_SIZE 256
 
 struct _PriorityQueue{
     int size;

@@ -14,6 +14,7 @@ FILE* CloseFile(FILE* fp);
 
 int GetOneBit(FILE* fp, int* buffer_p, int* unread_num_p, int* buffer_next_p);
 int GetOneByte(FILE* fp, int* buffer_p, int* unread_num_p, int* buffer_next_p);
+int GetOneByteSimple(FILE* fp);         // getc
 
 void PrintOneBit(FILE* fp, int* buffer_p, int* buffer_len_p, int this_bit);
 void PrintOneByte(FILE* fp, int* buffer_p, int* buffer_len_p, int this_byte);

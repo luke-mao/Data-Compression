@@ -3,10 +3,8 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "tree.h"
-#include "pq.h"
-
-
-
+#include "priority_queue.h"
+#include "util.h"
 
 
 PriorityQueue PriorityQueueCreate(void){
