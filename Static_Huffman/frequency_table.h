@@ -21,7 +21,7 @@ FreqTable FreqTableCreate(int size);
 FreqTable FreqTableDestroy(FreqTable);
 
 void FreqTableInsert(FreqTable, int c);
-void FreqTableGetCount(FreqTable, int c);
+int FreqTableGetCount(FreqTable, int c);
 
 void FreqTableShow(FreqTable);
 

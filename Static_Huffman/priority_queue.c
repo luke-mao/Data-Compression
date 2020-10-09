@@ -21,7 +21,7 @@ PriorityQueue PriorityQueueCreate(void){
         pq->queue[i] = NULL;
     }
 
-    return;
+    return pq;
 }
 
 

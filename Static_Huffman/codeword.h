@@ -8,8 +8,8 @@
 #include "tree.h"
 #include "priority_queue.h"
 #include "frequency_table.h"
-#include "file.h"
 #include "util.h"
+#include "file.h"
 
 
 struct _CodeWordNode{
@@ -43,6 +43,6 @@ CodeWordNode CodeWordGetNode(CodeWord, int c);
 
 void CodeWordShow(CodeWord);
 
-
+void PrintCodeWordToFile(FILE* fp, int* buffer_p, int* buffer_len_p, CodeWordNode cwn);
 
 #endif 

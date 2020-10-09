@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "frequency_table.h"
-#include "file.h"
 #include "util.h"
 
 
@@ -49,12 +48,12 @@ void FreqTableInsert(FreqTable fqtable, int c){
 }
 
 
-void FreqTableGetCount(FreqTable fqtable, int c){
+int FreqTableGetCount(FreqTable fqtable, int c){
     assert(fqtable != NULL && fqtable->table != NULL);
     assert(c >= 0 && c < fqtable->size);
     assert(fqtable->table[c] >= 0);
 
-    return fqtable->table[c]
+    return fqtable->table[c];
 }
 
 

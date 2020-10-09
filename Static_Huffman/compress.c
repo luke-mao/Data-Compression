@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 #include "tree.h"
 #include "priority_queue.h"
 #include "frequency_table.h"
@@ -159,7 +160,7 @@ int ReadFilePrintCompression(FILE* fp_in, FILE* fp_out, CodeWord cw){
 
     while ((c = getc(fp_in)) != EOF){
         cwn = CodeWordGetNode(cw, c);
-        PrintCodeWord(fp_out, &buffer, &buffer_len, cwn);
+        PrintCodeWordToFile(fp_out, &buffer, &buffer_len, cwn);
     }
 
     // after finish, pad the last byte if necessary
@@ -176,7 +177,7 @@ void PrintCompressionTree(FILE* fp, Tree tr){
     // during decompression, use stack to rebuild the tree
     int buffer = 0;
     int buffer_len = 0;
-    OutputCompressionTreeFunction(fp, &buffer, &buffer_len, tr->root);
+    PrintCompressionTreeFunction(fp, &buffer, &buffer_len, tr->root);
     PadByte(fp, &buffer, &buffer_len);
 
     return;
@@ -198,8 +199,8 @@ void PrintCompressionTreeFunction(FILE* fp, int* buffer_p, int* buffer_len_p, Tr
         else{
             // internal node
             // go down left and right first
-            OutputCompressionTreeFunction(fp, buffer_p, buffer_len_p, trn->left);
-            OutputCompressionTreeFunction(fp, buffer_p, buffer_len_p, trn->right);
+            PrintCompressionTreeFunction(fp, buffer_p, buffer_len_p, trn->left);
+            PrintCompressionTreeFunction(fp, buffer_p, buffer_len_p, trn->right);
 
             // then print the bit 0
             PrintOneBit(fp, buffer_p, buffer_len_p, 0);

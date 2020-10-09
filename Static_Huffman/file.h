@@ -25,6 +25,4 @@ void RePrintFirstByteWithPadNumber(FILE* fp, int pad_num);
 
 int ReadFirstByteGetPadNumber(FILE* fp);
 
-void PrintCodeWord(FILE* fp, int* buffer_p, int* buffer_len_p, CodeWordNode cwn);
-
 #endif 
