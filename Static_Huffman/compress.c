@@ -12,6 +12,8 @@
 
 void UseTreeProduceCodeWordFunction(CodeWord cw, TreeNode trn);
 
+void PrintCompressionTreeFunction(FILE* fp, int* buffer_p, int* buffer_len_p, TreeNode trn);
+
 
 // add .huff suffix 
 char* CreateCompressedFileName(char* filename){
@@ -140,7 +142,7 @@ void UseTreeProduceCodeWordFunction(CodeWord cw, TreeNode trn){
 }
 
 
-void ReadFileOutputCompression(FILE* fp_in, FILE* fp_out, CodeWord cw){
+int ReadFilePrintCompression(FILE* fp_in, FILE* fp_out, CodeWord cw){
     assert(fp_in != NULL && fp_out != NULL);
     assert(cw != NULL);
     assert(cw->size > 0 && cw->list != NULL);
@@ -162,7 +164,47 @@ void ReadFileOutputCompression(FILE* fp_in, FILE* fp_out, CodeWord cw){
 
     // after finish, pad the last byte if necessary
     int pad_num = PadByte(fp_out, &buffer, &buffer_len);
-    RePrintFirstByteWithPadNumber(fp_out, pad_num);
+    return pad_num;
+}
+
+
+void PrintCompressionTree(FILE* fp, Tree tr){
+    assert(fp != NULL);
+    assert(tr != NULL && tr->root != NULL);
+
+    // output post order traversal of the tree
+    // during decompression, use stack to rebuild the tree
+    int buffer = 0;
+    int buffer_len = 0;
+    OutputCompressionTreeFunction(fp, &buffer, &buffer_len, tr->root);
+    PadByte(fp, &buffer, &buffer_len);
+
+    return;
+}
+
+
+void PrintCompressionTreeFunction(FILE* fp, int* buffer_p, int* buffer_len_p, TreeNode trn){
+    assert(fp != NULL);
+    assert(buffer_p != NULL && buffer_len_p != NULL);
+
+    if (trn != NULL){
+        // post order traversal: left, right, middle
+        // check this node first
+        if (IsLeafNode(trn)){
+            // for leaf node: print 1 + byte
+            PrintOneBit(fp, buffer_p, buffer_len_p, 1);
+            PrintOneByte(fp, buffer_p, buffer_len_p, GetC(trn));
+        }
+        else{
+            // internal node
+            // go down left and right first
+            OutputCompressionTreeFunction(fp, buffer_p, buffer_len_p, trn->left);
+            OutputCompressionTreeFunction(fp, buffer_p, buffer_len_p, trn->right);
+
+            // then print the bit 0
+            PrintOneBit(fp, buffer_p, buffer_len_p, 0);
+        }
+    }
 
     return;
 }

@@ -25,7 +25,10 @@ Tree UsePriorityQueueProduceTree(PriorityQueue);
 
 CodeWord UseTreeProduceCodeWord(Tree tr);
 
-void ReadFileOutputCompression(FILE* fp_in, FILE* fp_out, CodeWord cw);
+void PrintCompressionTree(FILE* fp, Tree tr);
+
+// return the pad number
+int ReadFilePrintCompression(FILE* fp_in, FILE* fp_out, CodeWord cw);
 
 
 #endif 
