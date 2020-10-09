@@ -5,9 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-const int power_of_2[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
-
+#include "util.h"
+#include "codeword.h"
 
 FILE* OpenFileWithMode(char* filename, char* mode);
 FILE* CloseFile(FILE* fp);
@@ -26,6 +25,6 @@ void RePrintFirstByteWithPadNumber(FILE* fp, int pad_num);
 
 int ReadFirstByteGetPadNumber(FILE* fp);
 
-
+void PrintCodeWord(FILE* fp, int* buffer_p, int* buffer_len_p, CodeWordNode cwn);
 
 #endif 

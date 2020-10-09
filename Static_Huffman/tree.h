@@ -6,10 +6,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
-#define ROOT_C -2
+#define ROOT_NODE_C -2
 #define INTERNAL_NODE_C -3
-
 
 
 struct _TreeNode{
@@ -17,6 +15,7 @@ struct _TreeNode{
     int occ;
     struct _TreeNode *left;
     struct _TreeNode *right;
+    struct _TreeNode *parent;
 };
 
 typedef struct _TreeNode *TreeNode;
@@ -27,12 +26,12 @@ struct _Tree{
 
 typedef struct _Tree *Tree;
 
-
-TreeNode TreeNodeCreate(int c, int occ, TreeNode left, TreeNode right);
+// create the treenode with c and occ only, leave connection to be done later
+TreeNode TreeNodeCreate(int c, int occ);
 TreeNode TreeNodeDelete(TreeNode);
 
 
-Tree TreeCreate(void);
+Tree TreeCreate(TreeNode root);
 Tree TreeDestroy(Tree);
 
 
@@ -41,6 +40,8 @@ bool IsRootNode(TreeNode);
 bool IsInternalNode(TreeNode);
 bool IsLeafNode(TreeNode);
 bool IsOccSmaller(TreeNode trn1, TreeNode trn2);
+
+bool IsLeftChild(TreeNode child, TreeNode parent);
 
 int GetC(TreeNode);
 int GetOcc(TreeNode);
@@ -52,5 +53,8 @@ void ConnectAsLeftChild(TreeNode child, TreeNode parent);
 void ConnectAsRightChild(TreeNode child, TreeNode parent);
 void ConnectAsChild(TreeNode child, TreeNode parent, bool isRightChild);
 
+void ResetInternalNodeToRootNode(TreeNode);
+
+int TreeNodeGetDepth(TreeNode trn);
 
 #endif 

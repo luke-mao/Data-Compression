@@ -5,10 +5,7 @@
 #include "tree.h"
 
 
-
-
-
-TreeNode TreeNodeCreate(int c, int occ, TreeNode left, TreeNode right){
+TreeNode TreeNodeCreate(int c, int occ){
     assert(c >= INTERNAL_NODE_C);
     assert(occ >= 0);
 
@@ -17,8 +14,9 @@ TreeNode TreeNodeCreate(int c, int occ, TreeNode left, TreeNode right){
 
     trn->c = c;
     trn->occ = occ;
-    trn->left = left;
-    trn->right = right;
+    trn->left = NULL;
+    trn->right = NULL;
+    trn->parent = NULL;
 
     return trn;
 }
@@ -39,10 +37,14 @@ TreeNode TreeNodeDelete(TreeNode trn){
 
 
 // for now, set the root to null
-Tree TreeCreate(void){
+Tree TreeCreate(TreeNode root){
+    assert(IsTreeNodeValid(root));
+    assert(IsRootNode(root));
+
     Tree tr = (Tree) malloc(sizeof(struct _Tree));
     assert(tr != NULL);
-    tr->root = NULL;
+
+    tr->root = root;
     return tr;
 }
 
@@ -66,7 +68,7 @@ bool IsTreeNodeValid(TreeNode trn){
 
 bool IsRootNode(TreeNode trn){
     assert(IsTreeNodeValid(trn));
-    return trn->c == ROOT_C;
+    return trn->c == ROOT_NODE_C;
 }
 
 
@@ -87,6 +89,14 @@ bool IsOccSmaller(TreeNode trn1, TreeNode trn2){
     assert(IsTreeNodeValid(trn1));
     assert(IsTreeNodeValid(trn2));
     return trn1->occ < trn2->occ;
+}
+
+
+bool IsLeftChild(TreeNode child, TreeNode parent){
+    assert(IsTreeNodeValid(child) && IsTreeNodeValid(parent));
+    assert(child->parent == parent);
+
+    return parent->left == child;
 }
 
 
@@ -120,6 +130,7 @@ int SumTwoOcc(TreeNode trn1, TreeNode trn2){
 void ConnectAsLeftChild(TreeNode child, TreeNode parent){
     assert(IsTreeNodeValid(child) && IsTreeNodeValid(parent));
     parent->left = child;
+    child->parent = parent;
     return;
 }
 
@@ -127,6 +138,7 @@ void ConnectAsLeftChild(TreeNode child, TreeNode parent){
 void ConnectAsRightChild(TreeNode child, TreeNode parent){
     assert(IsTreeNodeValid(child) && IsTreeNodeValid(parent));
     parent->right = child;
+    child->parent = parent;
     return;
 }
 
@@ -145,3 +157,25 @@ void ConnectAsChild(TreeNode child, TreeNode parent, bool isRightChild){
 }
 
 
+void ResetInternalNodeToRootNode(TreeNode trn){
+    assert(IsTreeNodeValid(trn));
+    assert(IsInternalNode(trn));
+
+    trn->c = ROOT_NODE_C;
+    return;
+}
+
+
+int TreeNodeGetDepth(TreeNode trn){
+    assert(IsTreeNodeValid(trn));
+
+    // while loop to trace upwards
+    int depth = 0;
+    TreeNode current = trn;
+    while (! IsRootNode(current)){
+        current = current->parent;
+        depth += 1;
+    }
+
+    return depth;
+}

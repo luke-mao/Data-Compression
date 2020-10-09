@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "util.h"
+#include "codeword.h"
 #include "file.h"
+
 
 
 FILE* OpenFileWithMode(char* filename, char* mode){
@@ -144,15 +147,20 @@ int PadByte(FILE* fp, int* buffer_p, int* buffer_len_p){
     assert(buffer_p != NULL);
     assert(buffer_len_p != NULL && (*buffer_len_p) >= 0 && (*buffer_len_p) <= 8);
 
-    int pad_num = 8 - (*buffer_len_p);
-    (*buffer_p) <<= pad_num;
-    putc(*buffer_p, fp);
+    if ((*buffer_len_p) == 0){
+        return 0;
+    }
+    else{
+        int pad_num = 8 - (*buffer_len_p);
+        (*buffer_p) <<= pad_num;
+        putc(*buffer_p, fp);
 
-    // after padding, reset the buffer and its length to 0
-    (*buffer_p) = 0;
-    (*buffer_len_p) = 0;
+        // after padding, reset the buffer and its length to 0
+        (*buffer_p) = 0;
+        (*buffer_len_p) = 0;
 
-    return pad_num;
+        return pad_num;
+    }
 }
 
 
@@ -180,4 +188,49 @@ int ReadFirstByteGetPadNumber(FILE* fp){
     // the pad number is at the first byte
     fseek(fp, 0, SEEK_SET);
     return getc(fp);
+}
+
+
+void PrintCodeWord(FILE* fp, int* buffer_p, int* buffer_len_p, CodeWordNode cwn){
+    assert(fp != NULL);
+    assert(buffer_p != NULL);
+    assert(buffer_len_p != NULL && (*buffer_len_p) >= 0 && (*buffer_len_p) <= 8);
+    assert(cwn != NULL && cwn->s != NULL);
+
+    if ((*buffer_len_p) == 8){
+        putc(*buffer_p, fp);
+        (*buffer_p) = 0;
+        (*buffer_len_p) = 0;
+    }    
+
+    // cwn->s[0] may not be exactly 8 bits, but all other are eight bits
+    // separate into two cases: exact, and not exact
+    if (cwn->len == cwn->num * 8){
+        for (int i = 0; i < cwn->num; i++){
+            PrintOneByte(fp, buffer_p, buffer_len_p, cwn->s[i]);
+        }
+    }
+    else{
+        // cwn->s[0] has total len - (num-1) * 8 bits
+        int extra_num = cwn->len - (cwn->num - 1) * 8;
+        int mask;
+        int this_bit;
+
+        for (int i = extra_num - 1; i >= 0; i--){
+            mask = 1 << i;
+            this_bit = mask & cwn->s[0];
+            this_bit >>= i;
+            this_bit &= 1;
+            PrintOneBit(fp, buffer_p, buffer_len_p, this_bit);  
+        }
+
+        // for the remaining, they are exactly 8 bits
+        if (cwn->num >= 2){
+            for (int i = 1; i < cwn->num; i++){
+                PrintOneByte(fp, buffer_p, buffer_len_p, cwn->s[i]);
+            }
+        }
+    }
+
+    return;
 }
