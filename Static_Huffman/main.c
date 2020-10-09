@@ -10,6 +10,7 @@
 #include "codeword.h"
 #include "frequency_table.h"
 #include "compress.h"
+#include "decompress.h"
 
 
 void compress(char* filename);
@@ -79,7 +80,27 @@ void compress(char* filename){
 
 
 void decompress(char* filename){
-    puts("not finish");
+    assert(filename != NULL);
+
+    char* filename_out = CreateDecompressedFileName(filename);
+
+    FILE* fp_in = OpenFileWithMode(filename, "rb");
+    FILE* fp_out = OpenFileWithMode(filename_out, "wb");
+
+    int pad_num = ReadFileGetPadNumber(fp_in);
+    int char_count = ReadFileGetCharCount(fp_in);
+
+    Tree tr = ReadHeaderProduceTree(fp_in, char_count);
+    ReadFilePrintDecompression(fp_in, fp_out, tr, pad_num);
+
+    CloseFile(fp_in);
+    CloseFile(fp_out);
+
+    TreeDestroy(tr);
+
+    free(filename_out);
+    filename_out = NULL;
+
     return;
 }
 

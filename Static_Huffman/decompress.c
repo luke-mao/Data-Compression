@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 #include "tree.h"
 #include "priority_queue.h"
 #include "frequency_table.h"

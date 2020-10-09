@@ -52,7 +52,7 @@ Stack StackIncreaseSize(Stack s){
 
 
 bool IsStackValid(Stack s){
-    return s != NULL && s->trns != NULL && s->size > 0 && s->top >= 0;
+    return s != NULL && s->trns != NULL && s->size > 0 && s->count >= 0;
 }
 
 bool IsStackFull(Stack s){
