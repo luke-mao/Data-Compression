@@ -8,7 +8,6 @@
 #include "tree.h"
 #include "util.h"
 
-#define SIZE_FACTOR 2
 
 struct _PriorityQueue{
     int size;

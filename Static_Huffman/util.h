@@ -7,6 +7,7 @@
 
 
 #define ASCII_SIZE 256
+#define SIZE_FACTOR 2
 
 const int power_of_2[9];
 

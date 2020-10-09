@@ -13,6 +13,12 @@
 #include "codeword.h"
 
 
+// first byte = number of bits pad
+// second byte = number of symbols used !! so that the stack can rebuild the tree
+// then the header: tree
+// then the main body
+
+
 char* CreateCompressedFileName(char* filename);
 
 void compression_status(char* name_in, char* name_out, FILE* fp_in, FILE* fp_out);
