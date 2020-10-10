@@ -20,7 +20,7 @@ Stack StackCreate(int size){
     assert(s->trns != NULL);
 
     for (int i = 0; i < s->size; i++){
-        s->trns = NULL;
+        s->trns[i] = NULL;
     }
 
     return s;

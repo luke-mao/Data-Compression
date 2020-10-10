@@ -57,23 +57,27 @@ int GetOneByte(FILE* fp, int* buffer_p, int* unread_num_p, int* buffer_next_p){
 
     if ((*unread_num_p) == 0){
         result = (*buffer_next_p);
+
         (*buffer_p) = getc(fp);
         (*unread_num_p) = 8;
+        
         (*buffer_next_p) = getc(fp);
     }
     else if ((*unread_num_p) == 8){
         result = (*buffer_p);
+
         (*buffer_p) = (*buffer_next_p);     // unread_num still be 8
+        
         (*buffer_next_p) = getc(fp);
     }
     else{
         // extract one part from buffer_p, and another half from the next byte
         int mask = power_of_2[*unread_num_p] - 1;
         result = (*buffer_p) & mask;
-        result <<= 8 - (*unread_num_p);
+        result <<= (8 - (*unread_num_p));
 
         mask = power_of_2[8 - (*unread_num_p)] - 1;        
-        int other_part = (*buffer_next_p) & (mask <<= (*unread_num_p));
+        int other_part = (*buffer_next_p) & (mask << (*unread_num_p));
         other_part >>= (*unread_num_p);
         other_part &= mask;
 
@@ -83,6 +87,7 @@ int GetOneByte(FILE* fp, int* buffer_p, int* unread_num_p, int* buffer_next_p){
         (*buffer_next_p) = getc(fp);
     }
 
+    result &= 255;      // clean the byte in case and extra bits
     return result;
 }
 

@@ -1,11 +1,11 @@
 CC=gcc
 LIBS=util.o file.o frequency_table.o tree.o priority_queue.o codeword.o compress.o stack.o decompress.o
-BINS=a
+BINS=huffman
 
 all : $(LIBS) $(BINS)
 
-a 					: main.c $(LIBS)
-						$(CC) main.c $(LIBS) -Wall -o  a 
+huffman 			: main.c $(LIBS)
+						$(CC) main.c $(LIBS) -Wall -o  huffman 
 decompress.o		: decompress.c util.o file.o tree.o stack.o
 compress.o 			: compress.c util.o file.o frequency_table.o tree.o priority_queue.o codeword.o
 codeword.o			: codeword.c util.o file.o frequency_table.o tree.o priority_queue.o
@@ -17,4 +17,4 @@ file.o				: file.c util.o
 util.o				: util.c
 
 clean : 
-	rm -f $(BINS) $(LIBS) *.huff dehuff.*
+	rm -f $(BINS) $(LIBS) *.huff dehuff_* testfile/*.huff testfile/dehuff_*

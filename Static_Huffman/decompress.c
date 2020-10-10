@@ -44,6 +44,7 @@ char* CreateDecompressedFileName(char* filename){
         }
     }
 
+
     if (idx == -1){
         // the file is in the local same folder
         strcpy(filename_out, "dehuff_");
@@ -52,7 +53,7 @@ char* CreateDecompressedFileName(char* filename){
     else{
         strncpy(filename_out, filename, idx+1);
         strcat(filename_out, "dehuff_");
-        strncpy(filename_out, filename+idx+1, len - (idx+1) - 5);
+        strncat(filename_out, filename+idx+1, len - (idx+1) - 5);
     }
 
     return filename_out;
@@ -90,12 +91,14 @@ Tree ReadHeaderProduceTree(FILE* fp, int char_count){
     fseek(fp, 2, SEEK_SET);     // start from the third char
 
     Stack s = StackCreate(char_count);
+
     int meet_char_count = 0;
 
     int buffer = getc(fp);
     int buffer_len = 8;
     int buffer_next = getc(fp);
     int this_bit, this_byte;
+
     TreeNode trn, trn1, trn2;
 
     while (! (meet_char_count == char_count && GetStackCount(s) == 1)){
@@ -109,9 +112,9 @@ Tree ReadHeaderProduceTree(FILE* fp, int char_count){
             // internal node
             // post order traversal: left, right middle
             trn = TreeNodeCreate(INTERNAL_NODE_C, 0);   // here occ does not matter
-            // get two from the stack: first is right, then is left
-            trn2 = StackPop(s);
-            trn1 = StackPop(s);
+            // get two from the stack
+            trn2 = StackPop(s);     // right child
+            trn1 = StackPop(s);     // left child
 
             ConnectAsLeftChild(trn1, trn);
             ConnectAsRightChild(trn2, trn);
@@ -131,6 +134,9 @@ Tree ReadHeaderProduceTree(FILE* fp, int char_count){
 
     // last byte of the header part is padded
     // so no need to worry about remaining bits
+    // but, since we read one extra bits during GetOneBit and GetOneByte functions
+    // need to move fp_in backwards one byte
+    fseek(fp, -1, SEEK_CUR);
 
     // now the tree is completed
     TreeNode root = StackPop(s);
@@ -163,7 +169,7 @@ void ReadFilePrintDecompression(FILE* fp_in, FILE* fp_out, Tree tr, int pad_num)
         }
 
         if (IsLeafNode(current)){
-            putc(GetC(current), fp_in);
+            putc(GetC(current), fp_out);
 
             current = tr->root;
         }
@@ -172,6 +178,9 @@ void ReadFilePrintDecompression(FILE* fp_in, FILE* fp_out, Tree tr, int pad_num)
     // now buffer_next is EOF
     // reduce the buffer_len
     buffer_len -= pad_num;
+
+    // and shift the byte, since the remaining bits start from left side
+    buffer >>= pad_num;
 
     int mask;
     while (buffer_len > 0){
@@ -190,7 +199,7 @@ void ReadFilePrintDecompression(FILE* fp_in, FILE* fp_out, Tree tr, int pad_num)
         }
 
         if (IsLeafNode(current)){
-            putc(GetC(current), fp_in);
+            putc(GetC(current), fp_out);
 
             current = tr->root;
         }
@@ -204,7 +213,7 @@ bool IsValidCompressedFile(char* filename){
     assert(filename != NULL);
     
     long len = strlen(filename);
-    return strcmp(".huff", filename + len - 5) == 1;
+    return strcmp(".huff", filename + len - 5) == 0;
 }
 
 

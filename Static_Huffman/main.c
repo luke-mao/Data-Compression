@@ -99,7 +99,11 @@ void decompress(char* filename){
     int char_count = ReadFileGetCharCount(fp_in);
 
     Tree tr = ReadHeaderProduceTree(fp_in, char_count);
+    // TreeShow(tr);
+
     ReadFilePrintDecompression(fp_in, fp_out, tr, pad_num);
+
+    decompression_status(filename, filename_out, fp_in, fp_out);
 
     CloseFile(fp_in);
     CloseFile(fp_out);
