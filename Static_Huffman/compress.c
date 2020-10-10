@@ -179,7 +179,7 @@ void PrintCompressionTree(FILE* fp, Tree tr){
     int buffer_len = 0;
     PrintCompressionTreeFunction(fp, &buffer, &buffer_len, tr->root);
     PadByte(fp, &buffer, &buffer_len);
-
+    
     return;
 }
 
@@ -207,5 +207,39 @@ void PrintCompressionTreeFunction(FILE* fp, int* buffer_p, int* buffer_len_p, Tr
         }
     }
 
+    return;
+}
+
+
+void PrintFirstByteEmpty(FILE* fp){
+    assert(fp != NULL);
+    fseek(fp, 0, SEEK_SET);
+    putc(0, fp);
+    return;
+}
+
+
+void RePrintFirstByteWithPadNumber(FILE* fp, int pad_num){
+    assert(fp != NULL);
+    assert(pad_num >= 0 && pad_num <= 7);
+
+    fseek(fp, 0, SEEK_SET);
+    putc(pad_num, fp);
+    return;
+}
+
+
+void PrintSecondByteCharCount(FILE* fp, FreqTable fqtable){
+    assert(fp != NULL);
+    assert(IsFreqTableValid(fqtable));
+    
+    fseek(fp, 1, SEEK_SET);
+    
+    int char_count = FreqTableGetCharCount(fqtable);
+
+    // for now, only deal with the ASCII set, char count >= 0 and <= 256
+    // so here -1, in order to print in one byte, and for compression + 1
+    putc(char_count - 1, fp);        
+    
     return;
 }

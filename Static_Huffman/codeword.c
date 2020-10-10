@@ -14,31 +14,32 @@
 CodeWordNode CodeWordNodeCreate(TreeNode trn){
     assert(IsLeafNode(trn));        // only leaf node has a codeword
 
-    int depth = TreeNodeGetDepth(trn);
-    int integer_num = (depth + 8 - 1) / 8;  // find ceil
+    int bit_num = TreeNodeGetDepth(trn);
+    int byte_num = (bit_num + 8 - 1) / 8;  // find ceil
 
     CodeWordNode cwn = (CodeWordNode) malloc(sizeof(struct _CodeWordNode));
     assert(cwn != NULL);
 
     cwn->c = GetC(trn);
-    cwn->len = depth;
-    cwn->num = integer_num;
+    cwn->bit_num = bit_num;
+    cwn->byte_num = byte_num;
     
-    cwn->s = (int*) malloc(integer_num * sizeof(int));
+    cwn->s = (int*) malloc(byte_num * sizeof(int));
     assert(cwn != NULL);
 
-    for (int i = 0; i < integer_num; i++){
+    // initialize to all zero
+    for (int i = 0; i < byte_num; i++){
         cwn->s[i] = 0;
     }
 
     int buffer = 0;
     int buffer_num = 0;
-    int s_idx = integer_num - 1;
+    int s_idx = byte_num - 1;
     int this_bit;
 
     TreeNode current = trn;
 
-    // allocate the path in reverse order
+    // allocate the bits backwards
     // so cwn->s[0] may not be exact 8 bits
     // but all other are exact 8 bits
 
@@ -54,7 +55,7 @@ CodeWordNode CodeWordNodeCreate(TreeNode trn){
         buffer |= this_bit;
 
         if (buffer_num == 8){
-            cwn->s[s_idx] = buffer & 256;   // remove any extra bits may exist
+            cwn->s[s_idx] = buffer & 255;   // remove any extra bits longer than 8 bits, & 11111111
             s_idx -= 1;
 
             buffer = 0;
@@ -77,7 +78,7 @@ CodeWordNode CodeWordNodeCreate(TreeNode trn){
 
 
 CodeWordNode CodeWordNodeDestroy(CodeWordNode cwn){
-    assert(cwn != NULL);
+    assert(IsCodeWordNodeValid(cwn));
 
     free(cwn->s);
     cwn->s = NULL;
@@ -89,16 +90,16 @@ CodeWordNode CodeWordNodeDestroy(CodeWordNode cwn){
 }
 
 
+// print in the form: xxx xxxxxxxx xxxxxxxx ...
 void CodeWordNodeShow(CodeWordNode cwn){
-    assert(cwn != NULL);
-    assert(cwn->num > 0 && cwn->s != NULL);
+    assert(IsCodeWordNodeValid(cwn));
 
     // cwn->s[0] may not be exact 8 bits
-    PrintByteInBits(cwn->s[0], cwn->len - (cwn->num - 1) * 8);
+    PrintByteInBits(cwn->s[0], cwn->bit_num - (cwn->byte_num - 1) * 8);
 
     // for full bytes, print 8 bits
-    if (cwn->num >= 2){
-        for (int i = 1; i < cwn->num; i++){
+    if (cwn->byte_num >= 2){
+        for (int i = 1; i < cwn->byte_num; i++){
             printf(" ");
             PrintByteInBits(cwn->s[i], 8); 
         }
@@ -160,6 +161,7 @@ void CodeWordInsertNode(CodeWord cw, CodeWordNode cwn){
 CodeWordNode CodeWordGetNode(CodeWord cw, int c){
     assert(cw != NULL && cw->list != NULL);
     assert(c >= 0 && c < cw->size);
+    assert(IsCodeWordNodeValid(cw->list[c]));
 
     return cw->list[c];
 }
@@ -196,14 +198,14 @@ void PrintCodeWordToFile(FILE* fp, int* buffer_p, int* buffer_len_p, CodeWordNod
 
     // cwn->s[0] may not be exactly 8 bits, but all other are eight bits
     // separate into two cases: exact, and not exact
-    if (cwn->len == cwn->num * 8){
-        for (int i = 0; i < cwn->num; i++){
+    if (cwn->bit_num == cwn->byte_num * 8){
+        for (int i = 0; i < cwn->byte_num; i++){
             PrintOneByte(fp, buffer_p, buffer_len_p, cwn->s[i]);
         }
     }
     else{
         // cwn->s[0] has total len - (num-1) * 8 bits
-        int extra_num = cwn->len - (cwn->num - 1) * 8;
+        int extra_num = cwn->bit_num - (cwn->byte_num - 1) * 8;
         int mask;
         int this_bit;
 
@@ -216,12 +218,17 @@ void PrintCodeWordToFile(FILE* fp, int* buffer_p, int* buffer_len_p, CodeWordNod
         }
 
         // for the remaining, they are exactly 8 bits
-        if (cwn->num >= 2){
-            for (int i = 1; i < cwn->num; i++){
+        if (cwn->byte_num >= 2){
+            for (int i = 1; i < cwn->byte_num; i++){
                 PrintOneByte(fp, buffer_p, buffer_len_p, cwn->s[i]);
             }
         }
     }
 
     return;
+}
+
+
+bool IsCodeWordNodeValid(CodeWordNode cwn){
+    return cwn != NULL && cwn->bit_num > 0 && cwn->byte_num > 0 && cwn->s != NULL;
 }

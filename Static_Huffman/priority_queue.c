@@ -105,7 +105,7 @@ void PriorityQueueInsertTreeNode(PriorityQueue pq, TreeNode trn){
 
     // here uses linear scan to make life easier
     int idx = 0;
-    while (idx <= GetCount(pq) && IsOccSmaller(trn, pq->queue[idx])){
+    while (idx < GetCount(pq) && IsOccSmaller(trn, pq->queue[idx])){
         idx += 1;
     }
 
@@ -114,7 +114,8 @@ void PriorityQueueInsertTreeNode(PriorityQueue pq, TreeNode trn){
     IncreaseCount(pq);
 
     // move the treenodes from idx+1 to end one space further
-    for (int i = idx+1; i < GetCount(pq); i++){
+    // !! move the last one, forward, otherwise there will be error
+    for (int i = GetCount(pq)-1; i > idx; i--){
         pq->queue[i] = pq->queue[i-1];
     }
 
@@ -131,4 +132,18 @@ TreeNode PriorityQueueGetTreeNode(PriorityQueue pq){
     // return the node from the end of the queue
     DecreaseCount(pq);
     return pq->queue[pq->count];
+}
+
+
+void PriorityQueueShow(PriorityQueue pq){
+    assert(IsPriorityQueueValid(pq));
+
+    printf("Priority Queue Print:\n");
+
+    for (int i = 0; i < pq->count; i++){
+        printf("(%d-%c, occ=%d) ", pq->queue[i]->c, pq->queue[i]->c, pq->queue[i]->occ);
+    }
+
+    printf("\n\n");
+    return;
 }

@@ -47,22 +47,30 @@ void compress(char* filename){
     FILE* fp_out = OpenFileWithMode(filename_out, "wb");
 
     FreqTable fqtable = ReadFileCountFrequency(fp_in);
+    // FreqTableShow(fqtable);
     
     PriorityQueue pq = UseFreqTableProducePriorityQueue(fqtable);
+    // PriorityQueueShow(pq);
     
     Tree tr = UsePriorityQueueProduceTree(pq);
+    // TreeShow(tr);
 
     CodeWord cw = UseTreeProduceCodeWord(tr);
+    // CodeWordShow(cw);
+
 
     // the first byte records the number of 0 pad at the end
     PrintFirstByteEmpty(fp_out);
+    PrintSecondByteCharCount(fp_out, fqtable);
 
-    // print the tree: this is the header
+    // // print the tree: this is the header
     PrintCompressionTree(fp_out, tr);
-
-    // body of compression
+    
+    // // body of compression
     int pad_num = ReadFilePrintCompression(fp_in, fp_out, cw);
     RePrintFirstByteWithPadNumber(fp_out, pad_num);
+
+    compression_status(filename, filename_out, fp_in, fp_out);
 
     CloseFile(fp_in);
     CloseFile(fp_out);

@@ -11,6 +11,7 @@
 // read the file and count the frequency of each char
 struct _FreqTable{
     int size;
+    int char_count;
     int *table;
 };
 
@@ -25,5 +26,8 @@ int FreqTableGetCount(FreqTable, int c);
 
 void FreqTableShow(FreqTable);
 
+int FreqTableGetCharCount(FreqTable);
+
+bool IsFreqTableValid(FreqTable);
 
 #endif 

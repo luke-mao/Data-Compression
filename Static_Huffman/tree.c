@@ -5,6 +5,9 @@
 #include "tree.h"
 
 
+void TreeShowFunction(TreeNode trn);
+
+
 TreeNode TreeNodeCreate(int c, int occ){
     assert(c >= INTERNAL_NODE_C);
     assert(occ >= 0);
@@ -171,11 +174,35 @@ int TreeNodeGetDepth(TreeNode trn){
 
     // while loop to trace upwards
     int depth = 0;
-    TreeNode current = trn;
-    while (! IsRootNode(current)){
-        current = current->parent;
-        depth += 1;
+
+    if (! IsRootNode(trn)){
+        TreeNode current = trn;
+        while (! IsRootNode(current)){
+            depth += 1;
+            current = current->parent;
+        }
     }
 
+
     return depth;
+}
+
+
+// in order traversal: left, middle, right
+void TreeShow(Tree tr){
+    assert(tr != NULL && tr->root != NULL);
+    printf("Tree Print:\n");
+    TreeShowFunction(tr->root);
+    printf("\n\n");
+}
+
+
+void TreeShowFunction(TreeNode trn){
+    if (trn != NULL){
+        TreeShowFunction(trn->left);
+        printf("(%d-%c occ=%d) ", trn->c, trn->c, trn->occ);
+        TreeShowFunction(trn->right);
+    }
+
+    return;
 }

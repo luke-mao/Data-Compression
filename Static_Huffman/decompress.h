@@ -24,5 +24,6 @@ Tree ReadHeaderProduceTree(FILE* fp, int char_count);
 
 void ReadFilePrintDecompression(FILE* fp_in, FILE* fp_out, Tree tr, int pad_num);
 
+int ReadFirstByteGetPadNumber(FILE* fp);
 
 #endif 

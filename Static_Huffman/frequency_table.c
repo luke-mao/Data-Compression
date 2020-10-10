@@ -13,6 +13,7 @@ FreqTable FreqTableCreate(int size){
     assert(fqtable != NULL);
 
     fqtable->size = size;
+    fqtable->char_count = 0;
 
     fqtable->table = (int*) malloc(size * sizeof(int));
     assert(fqtable->table != NULL);
@@ -26,7 +27,7 @@ FreqTable FreqTableCreate(int size){
 
 
 FreqTable FreqTableDestroy(FreqTable fqtable){
-    assert(fqtable != NULL);
+    assert(IsFreqTableValid(fqtable));
     
     free(fqtable->table);
     fqtable->table = NULL;
@@ -39,9 +40,13 @@ FreqTable FreqTableDestroy(FreqTable fqtable){
 
 
 void FreqTableInsert(FreqTable fqtable, int c){
-    assert(fqtable != NULL && fqtable->table != NULL);
+    assert(IsFreqTableValid(fqtable));
     assert(c >= 0 && c < fqtable->size);
     assert(fqtable->table[c] >= 0);
+
+    if (fqtable->table[c] == 0){
+        fqtable->char_count += 1;
+    }
 
     fqtable->table[c] += 1;
     return;
@@ -49,7 +54,7 @@ void FreqTableInsert(FreqTable fqtable, int c){
 
 
 int FreqTableGetCount(FreqTable fqtable, int c){
-    assert(fqtable != NULL && fqtable->table != NULL);
+    assert(IsFreqTableValid(fqtable));
     assert(c >= 0 && c < fqtable->size);
     assert(fqtable->table[c] >= 0);
 
@@ -58,7 +63,7 @@ int FreqTableGetCount(FreqTable fqtable, int c){
 
 
 void FreqTableShow(FreqTable fqtable){
-    assert(fqtable != NULL && fqtable->table != NULL);
+    assert(IsFreqTableValid(fqtable));
 
     printf("Frequency Table Print:\n");
     for (int i = 0; i < fqtable->size; i++){
@@ -71,3 +76,13 @@ void FreqTableShow(FreqTable fqtable){
     return;
 }
 
+
+int FreqTableGetCharCount(FreqTable fqtable){
+    assert(IsFreqTableValid(fqtable));
+    return fqtable->char_count;
+}
+
+
+bool IsFreqTableValid(FreqTable fqtable){
+    return fqtable != NULL && fqtable->size > 0 && fqtable->char_count >= 0 && fqtable->table != NULL;
+}

@@ -206,3 +206,12 @@ bool IsValidCompressedFile(char* filename){
     long len = strlen(filename);
     return strcmp(".huff", filename + len - 5) == 1;
 }
+
+
+int ReadFirstByteGetPadNumber(FILE* fp){
+    assert(fp != NULL);
+    
+    // the pad number is at the first byte
+    fseek(fp, 0, SEEK_SET);
+    return getc(fp);
+}

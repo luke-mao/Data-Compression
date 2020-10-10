@@ -57,4 +57,6 @@ void ResetInternalNodeToRootNode(TreeNode);
 
 int TreeNodeGetDepth(TreeNode trn);
 
+void TreeShow(Tree);
+
 #endif 

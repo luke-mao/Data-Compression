@@ -163,30 +163,3 @@ int PadByte(FILE* fp, int* buffer_p, int* buffer_len_p){
         return pad_num;
     }
 }
-
-
-void PrintFirstByteEmpty(FILE* fp){
-    assert(fp != NULL);
-    fseek(fp, 0, SEEK_SET);
-    putc(0, fp);
-    return;
-}
-
-
-void RePrintFirstByteWithPadNumber(FILE* fp, int pad_num){
-    assert(fp != NULL);
-    assert(pad_num >= 0 && pad_num <= 7);
-
-    fseek(fp, 0, SEEK_SET);
-    putc(pad_num, fp);
-    return;
-}
-
-
-int ReadFirstByteGetPadNumber(FILE* fp){
-    assert(fp != NULL);
-    
-    // the pad number is at the first byte
-    fseek(fp, 0, SEEK_SET);
-    return getc(fp);
-}

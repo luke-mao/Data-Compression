@@ -36,6 +36,7 @@ void DecreaseCount(PriorityQueue);
 void PriorityQueueInsertTreeNode(PriorityQueue, TreeNode);
 TreeNode PriorityQueueGetTreeNode(PriorityQueue);
 
+void PriorityQueueShow(PriorityQueue);
 
 
 #endif 
