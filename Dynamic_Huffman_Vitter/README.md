@@ -144,7 +144,7 @@ Codes for download the repository:
 
 ```
 git@github.com:luke-mao/Data-Compression.git
-cd Dynamic_Huffman_Vitter
+cd Data-Compression/Dynamic_Huffman_Vitter
 make
 ```
 
