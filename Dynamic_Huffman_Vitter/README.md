@@ -20,32 +20,29 @@ Update_TreeVITTER( accept symbol )
     p = pointer to symbol’s node;
 
     if ( p == NULL ){/* a new symbol! */
-        Create two leaf children of
-         the 0-node,such that the
-         right child is the new
-         symbol node and the left child
-         is the new 0-node;
+        Create two leaf children of the 0-node,
+        such that the right child is the new symbol node 
+        and the left child is the new 0-node;
+        the new symbol node has weight = 0 for now.
         p = parent of the symbol node;
-        leafToIncrement = the right child
-         of p;
+        leafToIncrement = the right child of p;
     }
     else {
-        Swap p in the tree with the leader
-            of its block;
-        if ( p is the sibling of the
-            0-node ) {
-         leafToIncrement = p;
-         p = parent of p;
+        for the leaf nodes block with weight equal to weight of p, swap p with the leader of the block. 
+
+        if ( p is the sibling of the 0-node ) {
+            leafToIncrement = p;
+            p = parent of p;
         }
     }
-
-    increase p weight by 1;
    
     while ( p != root of the tree ) {
         /* if possible, advance p to
             the next block. */
         SlideAndIncrement( p );
     }
+
+    increase root weight by 1
    
     if ( leafToIncrement != NULL ) {
         SlideAndIncrement(leafToIncrement);
@@ -57,9 +54,11 @@ We can see that, `SlideAndIncrement` is the major feature of Vitter's method. FG
 
 ![slide&increment vitter paper 1987](other/1.png)
 
-To update a leaf node, slides all leaf nodes with same weight before it one position backwards, and make this leaf node the leader, and increase its weight. Then procede with its new parent node. 
+To process a leaf node p (with weight wt), slides all **internal** nodes with weight wt before p one position backwards, and make this leaf node p the leader, and increase its weight. Then procede with its new parent node. 
 
-To update an internal node, slides all leaf nodes with weight 1 higher before its position one position backwards, and move this internal node into the gap, increase its weight. Thenprocede with its original parent node. 
+*From the algorithm, the leaft node is first swap with the top node of the block. That's why it only needs to slide with internal nodes.*
+
+To process an internal node p (with weight wt), slides all leaf nodes with weight wt+1 before its position one position backwards, and move this internal node into the gap, increase its weight. Then procede with its original parent node. 
 
 The pseudo code for `SlideAndIncrement` is at below. 
 ```
@@ -70,7 +69,7 @@ SlideAndIncrement ( accept node p ){
     if ( p is an internal node )
         Slide p in the tree higher than the leaf nodes of weight wt+1;
     else 
-        Slide p in the tree higher than the nodes of weight wt;
+        slides all internal nodes with same weight before it one position backwards, and make this leaf node the leader
 
     p’s weight = p’s weight + 1;
 
